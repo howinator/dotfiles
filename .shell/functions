@@ -1,0 +1,37 @@
+#!/usr/bin/env bash
+function comptex {
+    pdflatex $1.tex
+    bibtex $1
+    pdflatex $1.tex
+    pdflatex $1.tex
+    open $1.pdf
+}
+
+function chaws {
+    export AWS_DEFAULT_PROFILE=$1 && export AWS_PROFILE=$1
+}
+
+function ecrlogin {
+    if [ -z "$1" ]; then
+        REGION='us-east-1'
+    else 
+        REGION="$1"
+    fi
+    aws ecr get-login --no-include-email --region="$REGION" | bash
+}
+
+function cpphotos {
+  dir1='/Volumes/NIKON D850/DCIM/100ND850'
+  dir2='/Volumes/NIKON D850 /DCIM/100ND850'
+  if [[ -d "${dir1}" ]]; then
+    src=${dir1}
+  else
+    src=${dir2}
+  fi
+  dateformat=$(date '+%Y-%m-%d-%H%M%S')
+  rawdest="/Volumes/Seagate Expansion Media/External Photos/${dateformat}"
+  jpgdest="/Volumes/Seagate Expansion Media/temp-photos"
+  mkdir "${rawdest}"
+  find "${src}" -name '*.NEF' -exec cp {} "${rawdest}" \;
+  find "${src}" -name '*.JPG' -exec cp {} "${jpgdest}" \;
+}

@@ -1,0 +1,4 @@
+export EDITOR="/usr/bin/vim"
+export GO111MODULE=on  # need this to make go modules work
+#export PYENV_VERSION=3.7.0  # default to python --version == 3.7.0
+export TILLER_NAMESPACE=tiller # for personal-k8s
