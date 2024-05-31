@@ -1,0 +1,14 @@
+direnv
+eza
+fzf
+gh
+jq
+nvm
+pipx
+postgresql@14
+pre-commit
+pyenv
+ripgrep
+semgrep
+stow
+zoxide
