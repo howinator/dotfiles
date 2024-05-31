@@ -1,0 +1,14 @@
+# pyenv config
+# eval "$(pyenv init -)"
+# eval "$(pyenv virtualenv-init -)"
+
+eval "$(zoxide init zsh --cmd cd)"
+eval "$(fzf --zsh)"
+eval "$(/opt/homebrew/bin/brew shellenv)"
+
+# nvm
+[ -s "/opt/homebrew/opt/nvm/nvm.sh" ] && \. "/opt/homebrew/opt/nvm/nvm.sh"  # This loads nvm
+[ -s "/opt/homebrew/opt/nvm/etc/bash_completion.d/nvm" ] && \. "/opt/homebrew/opt/nvm/etc/bash_completion.d/nvm"  # This loads nvm bash_completion
+
+# pyenv install
+eval "$(pyenv init -)"

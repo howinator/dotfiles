@@ -1,0 +1,19 @@
+git_delete_remote_tag() {
+  git tag -d "$1"
+  git push origin ":refs/tags/$1"
+}
+
+git_rename_branch() {
+  current_branch=$(git rev-parse --abbrev-ref HEAD)
+  if [[ "$current_ branch" == 'master' ||  "$current_branch" == 'develop' || "$current_branch" == 'heapjs-develop' ]]; then
+    echo "try not to delete an important branch next time"
+    exit 1
+  fi
+  git branch -m "$1"
+  git push origin :"$current_branch"
+  git push origin "$1"
+}
+
+idea() {
+  open -na "/Applications/IntelliJ IDEA.app" --args "$@"
+}
