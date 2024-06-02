@@ -71,12 +71,14 @@ zstyle ':completion:*' matcher-list 'm:{a-z}={A-Za-z}'
 zstyle ':completion:*' list-colors "${(s.:.)LS_COLORS}"
 zstyle ':completion:*' menu no # disable default menu when using fzf-tab
 zstyle ':fzf-tab:complete:cd:*' fzf-preview 'eza --color=always --icons -1 $realpath'
+zstyle ':fzf-tab:complete:__zoxide_z:*' fzf-preview 'eza --color=always --icons -1 $realpath'
 
 # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
 
 # Load all aliases, evals, functions, etc.
 source ./.shell/variables
+## evals must be after compinit for zoxide to work
 source ./.shell/evals
 source ./.shell/aliases
 source ./.shell/functions
