@@ -1,3 +1,4 @@
+#source <(/opt/homebrew/bin/fzf --zsh)
 # Enable Powerlevel10k instant prompt. Should stay close to the top of ~/.zshrc.
 # Initialization code that may require console input (password prompts, [y/n]
 # confirmations, etc.) must go above this block; everything else may go below.
@@ -33,13 +34,15 @@ zinit light Aloxaf/fzf-tab
 zinit snippet OMZP::git
 
 ## Custom-ish plugins
+
+### eza completions
 zinit ice as"completion" depth=1 pick"completions/zsh/_eza"; zinit light eza-community/eza
-## Load direnv (faster) https://zdharma-continuum.github.io/zinit/wiki/Direnv-explanation/
+### Load direnv (faster) https://zdharma-continuum.github.io/zinit/wiki/Direnv-explanation/
 zinit from"gh-r" as"program" mv"direnv* -> direnv" \
     atclone'./direnv hook zsh > zhook.zsh' atpull'%atclone' \
     pick"direnv" src="zhook.zsh" for \
         direnv/direnv
-## This is specifically for poetry. shell completions were put here
+### This is specifically for poetry. shell completions were put here. Must come before compinit
 fpath+=~/.zfunc
 
 # Load completions

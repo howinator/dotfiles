@@ -20,7 +20,7 @@ idea() {
 
 brew-install () {
   brew install "$1"
-  brew leaves > ~/dotfiles/brew_installs.txt
+  brew bundle dump --file=~/dotfiles/Brewfile -f
   git -C "$HOME/dotfiles" add brew_installs.txt
   git -C "$HOME/dotfiles" commit -S -m "Add $1 to brew_installs.txt"
   git -C "$HOME/dotfiles" push origin main
