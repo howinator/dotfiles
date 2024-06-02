@@ -1,7 +1,3 @@
-# pyenv config
-# eval "$(pyenv init -)"
-# eval "$(pyenv virtualenv-init -)"
-
 eval "$(zoxide init zsh --cmd cd)"
 eval "$(fzf --zsh)"
 eval "$(/opt/homebrew/bin/brew shellenv)"
@@ -12,3 +8,6 @@ eval "$(/opt/homebrew/bin/brew shellenv)"
 
 # pyenv install
 eval "$(pyenv init -)"
+
+# install thefuck
+eval $(thefuck --alias fk)
