@@ -35,15 +35,6 @@ zinit from"gh-r" as"program" mv"direnv* -> direnv" \
     pick"direnv" src="zhook.zsh" for \
         direnv/direnv
 
-# Completion styling
-zstyle ':completion:*:*:ls:*' command /bin/ls
-
-# Load all aliases, evals, functions, etc.
-source ./.shell/variables
-source ./.shell/evals
-source ./.shell/aliases
-source ./.shell/functions
-
 # Load completions
 autoload -U compinit && compinit
 
@@ -66,9 +57,16 @@ setopt hist_ignore_all_dups
 setopt hist_save_no_dups
 setopt hist_ignore_dups
 setopt hist_find_no_dups
+
 ## Allows case-insensitive matching in auto-completion
 zstyle ':completion:*' matcher-list 'm:{a-z}={A-Za-z}'
 zstyle ':completion:*' list-colors "${(s.:.)LS_COLORS}"
 
 # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
+
+# Load all aliases, evals, functions, etc.
+source ./.shell/variables
+source ./.shell/evals
+source ./.shell/aliases
+source ./.shell/functions
