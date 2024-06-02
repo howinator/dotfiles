@@ -1,0 +1,9 @@
+
+
+# Show Themes
+show-bat-themes /path/to/file # /path/to/file is optional
+
+# Install theme
+- Download theme to `$(bat --config-dir)/themes`
+- bat cache --build
+- export BAT_THEME=<name> 

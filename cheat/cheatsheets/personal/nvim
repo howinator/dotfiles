@@ -1,0 +1,43 @@
+# keymaps
+jk <ESC> will exit insert mode
+
+# directory tree
+- ^w+h will switch to tree
+- <SPACE>ee to open file tree
+- % to create new file in tree
+- <SPACE>fs to grep in cwd
+- <SPACE>ff to find files in cwd
+
+# LSP code navigation
+- "gR" show references
+- "gD" go to declaration
+- "gd" show definition
+- "gi" show implementation
+- "gt" show type definition
+- "<space>rn" smart rename
+
+# Load config of current file
+:source %
+
+# See option explanation
+:h <option>
+
+# Formatting
+- <space>mp format file
+
+
+# window management
+- <SPACE>sv split vertically
+- <SPACE>sh split horizontally
+- <SPACE>se split windows equal size
+- <SPACE>sx close current split
+
+- <SPACE>to open new tab
+- <SPACE>tx close tab
+- <SPACE>tn go to next tab
+- <SPACE>tp go to previous tab
+- <SPACE>tf open current buffer in new tab
+
+# git
+
+- <SPACE>h will bring up the git stuff

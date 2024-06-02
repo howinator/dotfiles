@@ -44,3 +44,7 @@ function frg {
     $EDITOR +"${linenumber}" "$file"
   fi
 }
+
+funcion readme() {
+  bat ~/dotfiles/README.md
+}

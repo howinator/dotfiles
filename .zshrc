@@ -49,6 +49,10 @@ zinit ice depth=1 pick"fzf-git.sh"; zinit light junegunn/fzf-git.sh
 ### Get docker completions
 zinit ice as"completion"
 zinit snippet https://github.com/docker/cli/blob/master/contrib/completion/zsh/_docker
+### Cheat fzf integration
+#### :TODO: this is not currently working?
+zinit ice as"completion" depth=1 pick"scripts/cheat.zsh"
+zinit light cheat/cheat
 
 
 # Load completions
@@ -61,6 +65,9 @@ bindkey -e
 ## Namespaces search to command typed out. Without "curl" ^p might return an echo command.
 bindkey '^p' history-search-backward
 bindkey '^n' history-search-forward
+## Show completions for command
+#zle -N _complete_debug_generic _complete_help_generic
+#bindkey '^xc' _complete_debug_generic
 
 # Shell history
 ## Most of this is just getting rid of dupes
@@ -86,6 +93,7 @@ zstyle ':fzf-tab:complete:__zoxide_z:*' fzf-preview 'eza --color=always --icons 
 ## Allow docker "option stacking" e.g. docker run -it will work
 zstyle ':completion:*:*:docker:*' option-stacking yes
 zstyle ':completion:*:*:docker-*:*' option-stacking yes
+#zstyle ':completion:*:*:cheat:*'  # try to make cheat completion work
 
 
 # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.

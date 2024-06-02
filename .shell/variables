@@ -1,6 +1,7 @@
 export AWS_DEFAULT_PROFILE=engineer
 export EDITOR=vim
 export BATH_THEME=Dracula
+export CHEAT_USE_FZF=true
 
 # pyenv install
 export PYENV_ROOT="$HOME/.pyenv"

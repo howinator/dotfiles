@@ -1,0 +1,19 @@
+# Show recent commands
+- ^R
+
+# Cycle through recent commands of same type
+- ^P/^N
+
+# Basic opetation
+- cd <TAB>
+- kill <TAB>
+- unalias <TAB>
+
+# Fzf edit file, search for contents
+- frg 'search_string' will fzf/rg find file that matches string
+
+# fzf commits 
+- ^GH
+
+# fzf branches
+- ^GB

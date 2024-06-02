@@ -28,3 +28,4 @@ brew_installs.txt
 .stow-local-ignore
 .*\.(swp|bak|tmp)
 Brewfile
+cheat/
