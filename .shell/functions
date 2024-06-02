@@ -30,3 +30,17 @@ show-bat-themes() {
   local file=${1:-~/projects/detail/packages/replay/src/cli.ts}
   bat --list-themes | fzf --preview="bat --theme={} --color=always ${file}"
 }
+
+function frg {
+  result=$(rg --no-ignore --hidden --ignore-case --color=always --line-number --no-heading "$@" 2>/dev/null |
+    fzf --ansi \
+        --color 'hl:-1:underline,hl+:-1:underline:reverse' \
+        --delimiter ':' \
+        --preview "bat --color=always {1} --theme='Solarized (light)' --highlight-line {2}" \
+        --preview-window 'up,60%,border-bottom,+{2}+3/3,~3')
+    file=${result%%:*}
+    linenumber=$(echo "${result}" | cut -d: -f2)
+  if [[ -n "$file" ]]; then
+    $EDITOR +"${linenumber}" "$file"
+  fi
+}

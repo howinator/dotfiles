@@ -7,6 +7,7 @@
 - cd <TAB> will open fzf
 - kill -9 <TAB> will fzf
 - unalias <TAB>
+- `frg` will use rg to fuzzy find files that have string then open editor to that position
 
 # Git
 - ^GH = fzf git commits
