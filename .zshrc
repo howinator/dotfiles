@@ -31,7 +31,6 @@ zinit light Aloxaf/fzf-tab
 
 ## OMZ Plugins
 zinit snippet OMZP::git
-#zinit snippet OMZP::poetry
 
 ## Custom-ish plugins
 zinit ice as"completion" depth=1 pick"completions/zsh/_eza"; zinit light eza-community/eza
@@ -40,6 +39,8 @@ zinit from"gh-r" as"program" mv"direnv* -> direnv" \
     atclone'./direnv hook zsh > zhook.zsh' atpull'%atclone' \
     pick"direnv" src="zhook.zsh" for \
         direnv/direnv
+## This is specifically for poetry. shell completions were put here
+fpath+=~/.zfunc
 
 # Load completions
 autoload -U compinit && compinit
