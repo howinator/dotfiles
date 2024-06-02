@@ -1,6 +1,7 @@
 tap "homebrew/bundle"
 brew "bat"
 brew "cheat"
+brew "curlie"
 brew "direnv"
 brew "eza"
 brew "fd"
