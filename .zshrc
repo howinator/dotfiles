@@ -27,7 +27,13 @@ zinit ice depth"1"; zinit light romkatv/powerlevel10k
 zinit light zsh-users/zsh-syntax-highlighting
 zinit light zsh-users/zsh-completions
 zinit light zsh-users/zsh-autosuggestions
+zinit light Aloxaf/fzf-tab
 
+## OMZ Plugins
+zinit snippet OMZP::git
+#zinit snippet OMZP::poetry
+
+## Custom-ish plugins
 zinit ice as"completion" depth=1 pick"completions/zsh/_eza"; zinit light eza-community/eza
 ## Load direnv (faster) https://zdharma-continuum.github.io/zinit/wiki/Direnv-explanation/
 zinit from"gh-r" as"program" mv"direnv* -> direnv" \
@@ -37,6 +43,8 @@ zinit from"gh-r" as"program" mv"direnv* -> direnv" \
 
 # Load completions
 autoload -U compinit && compinit
+## Make zinit go fast?
+zinit cdreplay -q
 
 # Enable emacs key bindings
 bindkey -e
@@ -61,6 +69,8 @@ setopt hist_find_no_dups
 ## Allows case-insensitive matching in auto-completion
 zstyle ':completion:*' matcher-list 'm:{a-z}={A-Za-z}'
 zstyle ':completion:*' list-colors "${(s.:.)LS_COLORS}"
+zstyle ':completion:*' menu no # disable default menu when using fzf-tab
+zstyle ':fzf-tab:complete:cd:*' fzf-preview 'eza --color=always --icons -1 $realpath'
 
 # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
