@@ -18,3 +18,16 @@
 	rebase-onto = "!f() { git rebase --onto \"$1\" \"$(git merge-base --fork-point \"$1\")\" \"$(git rev-parse --abbrev-ref HEAD)\"; }; f"
 [pull]
 	ff = only
+
+# Better diffing
+[core]
+	pager = delta
+[interactive]
+	diffFilter = delta --color-only
+[delta]
+	navigate = true
+	side-by-side = true
+[merge]
+	conflictstyle = diff3
+[diff]
+	colorMoved=default

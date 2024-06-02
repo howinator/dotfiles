@@ -83,11 +83,11 @@ zstyle ':fzf-tab:complete:__zoxide_z:*' fzf-preview 'eza --color=always --icons 
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
 
 # Load all aliases, evals, functions, etc.
-source ./.shell/variables
+source $HOME/.shell/variables
 ## evals must be after compinit for zoxide to work
-source ./.shell/evals
-source ./.shell/aliases
-source ./.shell/functions
+source $HOME/.shell/evals
+source $HOME/.shell/aliases
+source $HOME/.shell/functions
 
 # Configure fzf
 ## Make fzf use fd

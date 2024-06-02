@@ -26,3 +26,4 @@ alias la="eza -a --icons --color=always"
 alias lt='eza -alh --icons --no-user --no-permissions --git --sort=modified' # list everything sorted by last modified
 alias ls="eza '--icons' '--color=always'" # :TRICKY: tab autocomplete breaks without single quoting options. idk why 
 alias lst="eza -aT --color=always --icons --level=2"
+
