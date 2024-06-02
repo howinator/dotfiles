@@ -44,6 +44,8 @@ zinit from"gh-r" as"program" mv"direnv* -> direnv" \
         direnv/direnv
 ### This is specifically for poetry. shell completions were put here. Must come before compinit
 fpath+=~/.zfunc
+### Install fzf git
+zinit ice depth=1 pick"fzf-git.sh"; zinit light junegunn/fzf-git.sh
 
 # Load completions
 autoload -U compinit && compinit
@@ -86,3 +88,17 @@ source ./.shell/variables
 source ./.shell/evals
 source ./.shell/aliases
 source ./.shell/functions
+
+# Configure fzf
+## Make fzf use fd
+export FZF_DEFAULT_COMMAND="fd --hidden --strip-cwd-prefix --exclude .git"
+export FZF_CTRL_T_COMMAND="$FZF_DEFAULT_COMMAND"
+export FZF_ALT_C_COMMAND="fd --type=d --hidden --strip-cwd-prefix --exclude .git"
+
+_fzf_compgen_path() {
+  fd --hidden --exclude .git . "$1"
+}
+
+_fzf_compgen_dir() {
+  fd --type=d --hidden --exclude .git "$1"
+}
