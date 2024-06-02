@@ -1,6 +1,7 @@
 # Basic nav
 - ^R will open recent commands in fzf
 - cd ^p will cycle through 
+- ^P or ^N will cycle through previous commands of the same type
 
 # fzf
 - cd <TAB> will open fzf
@@ -21,3 +22,4 @@
 # TODOs
 - Find better theme for bat and the terminal. 
   I'd love tokyo hack but I can't find it in .tmTheme
+- tab completions for docker

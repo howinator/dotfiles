@@ -46,6 +46,10 @@ zinit from"gh-r" as"program" mv"direnv* -> direnv" \
 fpath+=~/.zfunc
 ### Install fzf git
 zinit ice depth=1 pick"fzf-git.sh"; zinit light junegunn/fzf-git.sh
+### Get docker completions
+zinit ice as"completion"
+zinit snippet https://github.com/docker/cli/blob/master/contrib/completion/zsh/_docker
+
 
 # Load completions
 autoload -U compinit && compinit
@@ -72,12 +76,17 @@ setopt hist_save_no_dups
 setopt hist_ignore_dups
 setopt hist_find_no_dups
 
+# zstyle stuff
 ## Allows case-insensitive matching in auto-completion
 zstyle ':completion:*' matcher-list 'm:{a-z}={A-Za-z}'
 zstyle ':completion:*' list-colors "${(s.:.)LS_COLORS}"
 zstyle ':completion:*' menu no # disable default menu when using fzf-tab
-zstyle ':fzf-tab:complete:cd:*' fzf-preview 'eza --color=always --icons -1 $realpath'
+zstyle ':fzf-tab:complete:cd:*' fzf-preview 'eza --color=always --icons -1 $realpath' # use fzf with eza for cd autocomplete
 zstyle ':fzf-tab:complete:__zoxide_z:*' fzf-preview 'eza --color=always --icons -1 $realpath'
+## Allow docker "option stacking" e.g. docker run -it will work
+zstyle ':completion:*:*:docker:*' option-stacking yes
+zstyle ':completion:*:*:docker-*:*' option-stacking yes
+
 
 # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
