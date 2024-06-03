@@ -1,4 +1,5 @@
 alias dc='docker-compose'
+alias cat='bat'
 
 # Git aliases
 alias g=git
@@ -23,7 +24,7 @@ alias lh='eza -dhl --icons --no-user --no-permissions --git .* --group-directori
 alias ll='eza -ahl --icons --no-user --no-permissions --git --group-directories-first' # list everything with directories first
 alias lb="eza -alhF --icons --no-user --no-permissions --git --color=always --sort=size -r | awk '!/\x1b\[0?1;36m/'" # list files sorted by size
 alias la="eza -a --icons --color=always"
-alias lt='eza -alh --icons --no-user --no-permissions --git --sort=modified' # list everything sorted by last modified
+alias lt='eza -alh --ignore-glob="node_modules" --icons --no-user --no-permissions --git --sort=modified' # list everything sorted by last modified
 alias ls="eza '--icons' '--color=always'" # :TRICKY: tab autocomplete breaks without single quoting options. idk why 
-alias lst="eza -aT --color=always --icons --level=2"
+alias lst="eza -aT --ignore-glob='node_modules' --color=always --icons --level=2"
 

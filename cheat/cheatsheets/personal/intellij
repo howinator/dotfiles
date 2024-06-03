@@ -1,0 +1,26 @@
+# Open terminal
+<ALT>T
+
+# Return to editor from terminal
+<ESC>
+
+# Move tab to opposite group
+<CMD><SHIFT>D
+
+# Split right
+<CMD>D
+
+# Split down
+<CMD><SHIFT>D
+
+# Next Splitter
+<ALT><SHIFT>[
+
+# New File
+<CTRL><SHIFT>N
+
+# Rename
+<CTRL><SHIFT>R
+
+# Run a configuration
+<CTRL><ALT>R

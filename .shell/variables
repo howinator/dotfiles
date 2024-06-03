@@ -1,5 +1,5 @@
 export AWS_DEFAULT_PROFILE=engineer
-export EDITOR=vim
+export EDITOR=nvim
 export BATH_THEME=Dracula
 export CHEAT_USE_FZF=true
 
