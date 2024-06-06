@@ -110,14 +110,14 @@ source $HOME/.shell/functions
 ## Make fzf use fd
 export FZF_DEFAULT_COMMAND="fd --hidden --strip-cwd-prefix --exclude .git"
 export FZF_CTRL_T_COMMAND="$FZF_DEFAULT_COMMAND"
-export FZF_ALT_C_COMMAND="fd --type=d --hidden --strip-cwd-prefix --exclude .git"
+export FZF_ALT_C_COMMAND="fd --type=d --hidden --exclude .git . $HOME"
 
 _fzf_compgen_path() {
-  fd --hidden --exclude .git . "$1"
+  fd --hidden --exclude .git . "$HOME"
 }
 
 _fzf_compgen_dir() {
-  fd --type=d --hidden --exclude .git "$1"
+  fd --type=d --hidden --exclude .git "$HOME"
 }
 
 show_file_or_dir_preview="if [ -d {} ]; then eza --tree --color=always {} | head -200; else bat -n --color=always --line-range :500 {}; fi"
