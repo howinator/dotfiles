@@ -15,6 +15,7 @@ alias grb='git rebase -S'
 alias k=kubectl
 alias cddet='cd ~/projects/detail'
 alias gd="git diff -- ':!package-lock.json' ':!yarn.lock' ':!poetry.lock'"
+alias nv="nvim"
 
 # eza commands
 # alias ld='eza -lhD --icons --no-filesize --no-user --no-permissions --git' # list only directories

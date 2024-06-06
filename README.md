@@ -25,3 +25,4 @@
   I'd love tokyo hack but I can't find it in .tmTheme
 - tab completions for docker
 - Make cheat completion work
+- Make fzf search starting from home by default
