@@ -1,6 +1,7 @@
 tap "homebrew/bundle"
 tap "jesseduffield/lazygit"
 brew "bat"
+brew "brotli"
 brew "cheat"
 brew "curlie"
 brew "direnv"
