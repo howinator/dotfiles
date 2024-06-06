@@ -27,3 +27,5 @@
 - Make cheat completion work
 - ~Make fzf search starting from home by default~
   - This might be done. I changed to this behavior (maybe) in this commit
+  - One thing I'd like to change maybe is have fd ignore respecting .gitignore, but use fd's .config/ignore file
+    - Right now, it's respecting the .gitignore which means `bat **` is not showing some files I might care about

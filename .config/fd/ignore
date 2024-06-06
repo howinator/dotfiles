@@ -1,0 +1,7 @@
+.cache/
+Library/
+.docker/
+.local/
+node_modules/
+.git/
+.zsh_sessions/
