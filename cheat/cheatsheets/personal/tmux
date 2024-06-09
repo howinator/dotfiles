@@ -1,0 +1,49 @@
+# Windows
+## Create new window
+<prefix> c
+## Navigate windows
+<prefix> p
+<prefix> n
+<prefix> $WINDOW_NUM
+## Close window
+<prefix> &
+# Rename window
+<prefix> ,
+
+# Panes
+## Split horizontally
+<prefix> "
+## Split vertically
+<prefix> %
+## Navigate
+<prefix> q
+<prefix> hjkl
+## Resizing panes
+<prefix>+<arrow key>
+## Move current pane left
+<prefix> {
+## Move current pane right
+<prefix> }
+## Zoom in on pane
+<prefix> z
+## Pane to window
+<prefix> !
+## Close Pane
+<prefix> x
+
+# Copying
+## Enter copy mode
+<prefix> [
+
+# Session
+## Create new session with name
+tmux -s session-name
+
+# Advanced
+## Swap windows
+:swap-window -s 2 -t 1
+
+
+# See more here
+https://tmuxcheatsheet.com/
+Dracula theme: https://draculatheme.com/tmux

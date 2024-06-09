@@ -1,3 +1,4 @@
+export XDG_CONFIG_HOME="$HOME/.config"
 export AWS_DEFAULT_PROFILE=engineer
 export EDITOR=nvim
 export BATH_THEME=Dracula

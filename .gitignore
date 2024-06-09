@@ -5,3 +5,7 @@
 
 # vim
 *.swp
+
+.git/
+
+.config/tmux/plugins/
