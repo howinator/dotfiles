@@ -1,5 +1,4 @@
-Largely went through [this guide](https://www.josean.com/posts/how-to-setup-neovim-2024)
+# 💤 LazyVim
 
-# TODOs
-- I'm pretty sure that the `formatting.lua` plugin is working, but the difference between the guide and my implementation is I added an eslint LSP plugin
-- I skipped the linting plugin because it seemed to work out of the box?
+A starter template for [LazyVim](https://github.com/LazyVim/LazyVim).
+Refer to the [documentation](https://lazyvim.github.io/installation) to get started.

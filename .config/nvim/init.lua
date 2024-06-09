@@ -1,3 +1,2 @@
-require("howinator.core")
-require("howinator.lazy")
-
+-- bootstrap lazy.nvim, LazyVim and your plugins
+require("config.lazy")
