@@ -49,3 +49,7 @@ function frg {
 funcion readme() {
   bat ~/dotfiles/README.md
 }
+
+function cheatmd() {
+  cheat "$1" | mdcat
+}
