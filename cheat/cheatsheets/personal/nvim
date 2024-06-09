@@ -25,6 +25,11 @@ jk <ESC> will exit insert mode
 # Formatting
 - <space>mp format file
 
+# Treesitter
+- :Inspect show highlight groups under cursor
+- :InspectTree show parsed syntax tree
+- :EditQuery to open Live Query Editor
+
 
 # window management
 - <SPACE>sv split vertically

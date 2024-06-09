@@ -39,7 +39,9 @@
   "telescope.nvim": { "branch": "master", "commit": "f12b15e1b3a33524eb06a1ae7bc852fb1fd92197" },
   "todo-comments.nvim": { "branch": "main", "commit": "70a93ce66083699571adc361166504b03cc39c2b" },
   "tokyonight.nvim": { "branch": "main", "commit": "e4df5bb11d5dd419994c87e81e667847f0389c7e" },
-  "trouble.nvim": { "branch": "main", "commit": "806c50491078b66daf13c408042f2e74da46d0ff" },
+  "trouble.nvim": { "branch": "main", "commit": "75fad301e4a2b9c5d2a3f4befe997d36a8fc8361" },
   "ts-comments.nvim": { "branch": "main", "commit": "e339090c076871069c00e488b11def49aaf4e413" },
+  "vim-kitty": { "branch": "main", "commit": "029f565b0411c62075f3a9ba2c0acb58e6f6934c" },
+  "vim-tmux-navigator": { "branch": "master", "commit": "5b3c701686fb4e6629c100ed32e827edf8dad01e" },
   "which-key.nvim": { "branch": "main", "commit": "0099511294f16b81c696004fa6a403b0ae61f7a0" }
 }
