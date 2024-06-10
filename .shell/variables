@@ -4,6 +4,7 @@ export EDITOR=nvim
 export BAT_THEME=CatpuccinMocha
 export CHEAT_USE_FZF=true
 export PKG_CONFIG_PATH="/usr/local/opt/glib/lib/pkgconfig:$PKG_CONFIG_PATH"
+export GPG_TTY=$(tty)
 
 # pyenv install
 export PYENV_ROOT="$HOME/.pyenv"
