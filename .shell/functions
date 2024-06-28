@@ -20,7 +20,7 @@ idea() {
 
 brew-install () {
   echo "$@"
-  brew install "$@" || exit 1
+  brew install "$@" || return
   brew bundle dump --file=~/dotfiles/Brewfile -f
   git -C "$HOME/dotfiles" add Brewfile
   git -C "$HOME/dotfiles" commit -S -m "Add $1 to Brewfile"
