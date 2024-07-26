@@ -1,5 +1,7 @@
 #!/bin/bash
 
+export DISPLAY=:0
+
 # Set source and destination directories
 SRC_DIR="$HOME/projects/detail/apps/backend/metabase-data"
 DEST_DIR="$HOME/backups/metabase"

@@ -53,3 +53,18 @@ funcion readme() {
 function cheatmd() {
   cheat "$1" | mdcat
 }
+
+relpath() {
+    source=$1
+    target=$2
+
+    common_part=$source
+    back=
+    while [ "${target#$common_part}" = "${target}" ]; do
+        common_part=$(dirname $common_part)
+        back="../${back}"
+    done
+
+    echo ${back}${target#$common_part/}
+}
+
