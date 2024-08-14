@@ -38,3 +38,4 @@
     - Right now, it's respecting the .gitignore which means `bat **` is not showing some files I might care about
 - Add a dracula/tmux plugin which shows current playing spotify artist
 - Consider switching to cappucin tmux theme. I decided not to add it since I kind of like the dracula theme for tmux
+- Make nvim not use the clipboard register all the time
