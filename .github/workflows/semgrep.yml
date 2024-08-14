@@ -17,7 +17,7 @@ jobs:
     runs-on: ubuntu-20.04
     env:
       SEMGREP_APP_TOKEN: ${{ secrets.SEMGREP_APP_TOKEN }}
-      SEMGREP_APP_URL: http://localhost:3000
+      SEMGREP_APP_URL: https://14a4-52-119-114-227.ngrok-free.app
     container:
       image: semgrep/semgrep
     if: (github.actor != 'dependabot[bot]')

@@ -11,3 +11,8 @@ eval "$(pyenv init -)"
 
 # install thefuck
 eval $(thefuck --alias fk)
+
+if command -v ngrok &>/dev/null; then
+  eval "$(ngrok completion)"
+fi
+
