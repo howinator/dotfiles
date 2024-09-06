@@ -1,3 +1,5 @@
+<prefix> = <ctrl>-<space>
+
 # Windows
 ## Create new window
 <prefix> c

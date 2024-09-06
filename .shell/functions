@@ -68,3 +68,7 @@ relpath() {
     echo ${back}${target#$common_part/}
 }
 
+gd() {
+  commit=$1
+  git diff "$commit" -- ':!package-lock.json' ':!yarn.lock'
+}
