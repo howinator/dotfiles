@@ -54,7 +54,7 @@ function cheatmd() {
   cheat "$1" | mdcat
 }
 
-relpath() {
+function relpath() {
     source=$1
     target=$2
 
@@ -68,7 +68,21 @@ relpath() {
     echo ${back}${target#$common_part/}
 }
 
-gd() {
-  commit=$1
+function gd() {
+  commit=${1:-head}
   git diff "$commit" -- ':!package-lock.json' ':!yarn.lock'
+}
+
+psql() {
+    if [[ -f ".env" ]]; then
+        local conn_string=$(sed -n 's/^PG_CONNECTION_STRING=//p' .env | sed 's/^"\(.*\)"$/\1/')
+        if [[ -n "$conn_string" ]]; then
+            echo "INFO: Using connection string from .env file in $(pwd)"
+            command psql "$conn_string"
+        else
+            command psql "$@"
+        fi
+    else
+        command psql "$@"
+    fi
 }
