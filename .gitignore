@@ -9,3 +9,5 @@
 .git/
 
 .config/tmux/plugins/
+
+.shell/secrets.bash
