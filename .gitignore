@@ -11,3 +11,5 @@
 .config/tmux/plugins/
 
 .shell/secrets.bash
+.gitconfig.local
+.config/cheat/cheatsheets/

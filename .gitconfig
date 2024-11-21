@@ -1,5 +1,4 @@
 [user]
-	signingkey = 70B70CCF3CF0BF3C
 	email = 5847863+howinator@users.noreply.github.com
 	name = Howie Benefiel
 [commit]
@@ -16,6 +15,7 @@
 	parent = "!git show-branch | grep '*' | grep -v \"$(git rev-parse --abbrev-ref HEAD)\" | head -n1 | sed 's/.*\\[\\(.*\\)\\].*/\\1/' | sed 's/[\\^~].*//' #"
 # todo i'd like to easily rebase onto feature branches. I should get the range of commits from main and take the new branch as a parameter
 	rebase-onto = "!f() { git rebase --onto \"$1\" \"$(git merge-base --fork-point \"$1\")\" \"$(git rev-parse --abbrev-ref HEAD)\"; }; f"
+	hud = !git-hud
 [pull]
 	ff = only
 
@@ -30,6 +30,7 @@
 [merge]
 	conflictstyle = diff3
 [diff]
-	colorMoved=default
-[url "https://"]
-	insteadOf = git://
+  colorMoved=default
+
+[include]
+  path = ~/.gitconfig.local

@@ -1,3 +1,11 @@
+# Setup
+1. Clone the repo
+2. Create a `~/.shell/secrets.bash` file
+3. Create a GPG key and get the signing key
+4. Create a `~/.gitconfig.local` file
+5. Run `brew bundle install --file=Brewfile`
+6. Run `stow .`
+
 # Basic nav
 - ^R will open recent commands in fzf
 - cd ^p will cycle through 

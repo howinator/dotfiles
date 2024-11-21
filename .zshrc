@@ -42,7 +42,7 @@ zinit from"gh-r" as"program" mv"direnv* -> direnv" \
     atclone'./direnv hook zsh > zhook.zsh' atpull'%atclone' \
     pick"direnv" src="zhook.zsh" for \
         direnv/direnv
-### This is specifically for poetry. shell completions were put here. Must come before compinit
+### This is specifically for poetry and rust. shell completions were put here. Must come before compinit
 fpath+=~/.zfunc
 ### Install fzf git
 zinit ice depth=1 pick"fzf-git.sh"; zinit light junegunn/fzf-git.sh
@@ -150,6 +150,7 @@ cyan="#2CF9ED"
 
 export FZF_DEFAULT_OPTS="--color=fg:${fg},bg:${bg},hl:${purple},fg+:${fg},bg+:${bg_highlight},hl+:${purple},info:${blue},prompt:${cyan},pointer:${cyan},marker:${cyan},spinner:${cyan},header:${cyan}"
 
-export NVM_DIR="$HOME/.nvm"
+
+export NVM_DIR="$HOME/.config/nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
 [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
