@@ -16,6 +16,8 @@
 # todo i'd like to easily rebase onto feature branches. I should get the range of commits from main and take the new branch as a parameter
 	rebase-onto = "!f() { git rebase --onto \"$1\" \"$(git merge-base --fork-point \"$1\")\" \"$(git rev-parse --abbrev-ref HEAD)\"; }; f"
 	hud = !git-hud
+  rebase-onto = "!f() { git rebase --onto \"$1\" \"$(git merge-base --fork-point \"$1\")\" \"$(git rev-parse --abbrev-ref HEAD)\"; }; f"
+  checkout-pull = "!f() { git checkout \"$2\" && git pull \"$1\" \"$2\"; }; f"
 [pull]
 	ff = only
 

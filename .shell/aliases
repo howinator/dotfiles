@@ -12,6 +12,7 @@ alias gpf='git push --force-with-lease'
 alias gch='git checkout'
 alias gl='git pull'
 alias grb='git rebase -S'
+alias gchm='git checkout-pull origin main'
 alias k=kubectl
 alias cddet='cd ~/projects/detail'
 alias nv="nvim"
@@ -28,3 +29,4 @@ alias lt='eza -alh --ignore-glob="node_modules" --icons --no-user --no-permissio
 alias ls="eza '--icons' '--color=always'" # :TRICKY: tab autocomplete breaks without single quoting options. idk why 
 alias lst="eza -aT --ignore-glob='node_modules' --color=always --icons --level=2"
 
+alias realpath=grealpath
