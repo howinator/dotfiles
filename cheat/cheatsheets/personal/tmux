@@ -40,6 +40,14 @@
 # Session
 ## Create new session with name
 tmux -s session-name
+## Change session name
+<prefix> $
+## Show all sessions
+<prefix> s
+## Detatch from session
+<prefix> d
+## Kill session
+tmux kill-session -t mysession
 
 # Advanced
 ## Swap windows
