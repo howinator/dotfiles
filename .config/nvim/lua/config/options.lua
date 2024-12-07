@@ -5,3 +5,4 @@
 vim.g.root_spec = { "cwd" }
 vim.opt.number = true
 vim.opt.relativenumber = true
+vim.g.lazyvim_eslint_auto_format = true
