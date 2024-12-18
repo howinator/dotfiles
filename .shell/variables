@@ -18,4 +18,5 @@ export PATH="$PATH:/Users/howiebenefiel/Library/Application Support/JetBrains/To
 export PATH="$PATH:/Users/howiebenefiel/.local/bin" # for pipx
 export PATH="$PATH:$HOME/.cargo/bin"
 export PATH="/opt/homebrew/opt/postgresql@16/bin:$PATH"
+export PATH=$PATH:$(go env GOPATH)/bin
 source ~/.shell/secrets.bash
