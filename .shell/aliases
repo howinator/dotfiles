@@ -30,3 +30,5 @@ alias ls="eza '--icons' '--color=always'" # :TRICKY: tab autocomplete breaks wit
 alias lst="eza -aT --ignore-glob='node_modules' --color=always --icons --level=2"
 
 alias realpath=grealpath
+
+alias rgi='rg --hidden --no-ignore'
