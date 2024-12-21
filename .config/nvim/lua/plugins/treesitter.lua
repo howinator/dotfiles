@@ -1,6 +1,7 @@
 return {
   {
     "nvim-treesitter/nvim-treesitter",
+    dependencies = { "HiPhish/rainbow-delimiters.nvim" },
     opts = {
       ensure_installed = {
         "bash",
@@ -18,6 +19,9 @@ return {
         "vim",
         "yaml",
         "rust",
+      },
+      rainbow = {
+        enable = true,
       },
     },
   },
