@@ -3,6 +3,8 @@
 	name = Howie Benefiel
 [commit]
 	gpgsign = true
+[tag]
+	gpgSign = true
 [core]
 	editor = vim
 [push]

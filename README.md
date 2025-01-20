@@ -3,6 +3,11 @@
 2. Create a `~/.shell/secrets.bash` file
 3. Create a GPG key and get the signing key
 4. Create a `~/.gitconfig.local` file
+  a. Add the following to .gitconfig.local
+```
+[user]
+	signingkey = [KEY_ID]
+```
 5. Run `brew bundle install --file=Brewfile`
 6. Run `stow .`
 
