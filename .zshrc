@@ -100,11 +100,11 @@ zstyle ':completion:*:*:docker-*:*' option-stacking yes
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
 
 # Load all aliases, evals, functions, etc.
-source $HOME/.shell/variables
+source $HOME/.shell/variables.bash
 ## evals must be after compinit for zoxide to work
-source $HOME/.shell/evals
-source $HOME/.shell/aliases
-source $HOME/.shell/functions
+source $HOME/.shell/evals.bash
+source $HOME/.shell/aliases.bash
+source $HOME/.shell/functions.bash
 
 # Configure fzf
 ## Make fzf use fd
