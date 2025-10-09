@@ -86,3 +86,31 @@ psql() {
         command psql "$@"
     fi
 }
+
+function re_pair() {
+  trackpad_id=`blueutil --paired | grep "Howie.*Trackpad" | grep -Eo '[a-z0-9]{2}(-[a-z0-9]{2}){5}'`
+  trackpad_name=`blueutil --paired | grep "Howie.*Trackpad" | grep -Eo 'name: ".*"'`
+
+  keyboard_id=`blueutil --paired | grep "Howie.*Keyboard" | grep -Eo '[a-z0-9]{2}(-[a-z0-9]{2}){5}'`
+  keyboard_name=`blueutil --paired | grep "Howie.*Keyboard" | grep -Eo 'name: ".*"'`
+
+  echo "unpairing trackpad BT device $trackpad_id, $trackpad_name"
+  blueutil --unpair "$trackpad_id"
+  echo "unpairing keyboard BT device $keyboard_id, $keyboard_name"
+  blueutil --unpair "$keyboard_id"
+
+  echo "unpaired, waiting a few seconds for trackpad and keyboard to go to pairable state"
+  sleep 3
+  echo "pairing trackpad with BT device $trackpad_id, $trackpad_name"
+  blueutil --pair "$trackpad_id" "0000"
+  echo "trackpad paired"
+  blueutil --connect "$trackpad_id"
+  echo "trackpad connected"
+
+
+  echo "pairing keyboard with BT device $keyboard_id, $keyboard_name"
+  blueutil --pair "$keyboard_id" "0000"
+  echo "keyboard paired"
+  blueutil --connect "$keyboard_id"
+  echo "keyboard connected"
+}
