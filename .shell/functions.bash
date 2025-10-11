@@ -100,7 +100,7 @@ function re_pair() {
   blueutil --unpair "$keyboard_id"
 
   echo "unpaired, waiting a few seconds for trackpad and keyboard to go to pairable state"
-  sleep 3
+  sleep 10
   echo "pairing trackpad with BT device $trackpad_id, $trackpad_name"
   blueutil --pair "$trackpad_id" "0000"
   echo "trackpad paired"
