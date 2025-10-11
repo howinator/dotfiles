@@ -106,7 +106,7 @@ function re_pair() {
   echo "trackpad paired"
   blueutil --connect "$trackpad_id"
   echo "trackpad connected"
-
+  sleep 2
 
   echo "pairing keyboard with BT device $keyboard_id, $keyboard_name"
   blueutil --pair "$keyboard_id" "0000"
