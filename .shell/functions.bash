@@ -114,3 +114,12 @@ function re_pair() {
   blueutil --connect "$keyboard_id"
   echo "keyboard connected"
 }
+
+# this is for claude code
+function cd() {
+  if declare -f __zoxide_z &>/dev/null; then
+    __zoxide_z "$@"
+  else
+    builtin cd "$@"
+  fi
+}
