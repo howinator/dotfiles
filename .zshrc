@@ -1,4 +1,10 @@
 #source <(/opt/homebrew/bin/fzf --zsh)
+# Capture tmux pane location for Claude Code hooks
+if [ -n "$TMUX" ] && [ -z "$TMUX_LOCATION" ]; then
+  export TMUX_LOCATION=$(tmux display-message -p '#{session_name}:#{window_index}.#{pane_index}')
+  export TMUX_WINDOW_NAME=$(tmux display-message -p '#{window_name}')
+fi
+
 # Enable Powerlevel10k instant prompt. Should stay close to the top of ~/.zshrc.
 # Initialization code that may require console input (password prompts, [y/n]
 # confirmations, etc.) must go above this block; everything else may go below.
