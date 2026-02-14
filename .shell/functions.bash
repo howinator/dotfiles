@@ -125,7 +125,29 @@ function gwt() {
   repo_root=$(git rev-parse --show-toplevel 2>/dev/null) || { echo "Not a git repository"; return 1; }
   local repo_name=$(basename "$repo_root")
   local worktree_path="$HOME/.worktrees/${repo_name}-${branch}"
-  git worktree add "$worktree_path" "$branch" && cd "$worktree_path"
+  if [[ -d "$worktree_path" ]]; then
+    cd "$worktree_path"
+  elif git show-ref --verify --quiet "refs/heads/${branch}"; then
+    git worktree add "$worktree_path" "$branch" && cd "$worktree_path"
+  else
+    git worktree add -b "$branch" "$worktree_path" && cd "$worktree_path"
+  fi
+}
+
+function gwt-clean() {
+  local worktree_path
+  worktree_path=$(git rev-parse --show-toplevel 2>/dev/null) || { echo "Not a git repository"; return 1; }
+  local branch
+  branch=$(git rev-parse --abbrev-ref HEAD 2>/dev/null) || { echo "Could not determine branch"; return 1; }
+  if [[ "$worktree_path" != "$HOME/.worktrees/"* ]]; then
+    echo "Not in a worktree managed by gwt"
+    return 1
+  fi
+  local main_worktree
+  main_worktree=$(git worktree list --porcelain | head -1 | sed 's/worktree //')
+  cd "$main_worktree"
+  git worktree remove "$worktree_path"
+  git branch -d "$branch"
 }
 
 # this is for claude code

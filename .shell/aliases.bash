@@ -34,3 +34,6 @@ alias realpath=grealpath
 alias rgi='rg --hidden --no-ignore'
 
 alias tailscale="/Applications/Tailscale.app/Contents/MacOS/Tailscale"
+
+# Remove OMZ git plugin alias so our gwt function works
+unalias gwt 2>/dev/null
