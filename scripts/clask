@@ -1,0 +1,136 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+MODEL="claude-haiku-4-5-20251001"
+MAX_LINES_PER_FILE=500
+MAX_PAYLOAD_BYTES=400000  # ~400KB, safe for Haiku's context
+
+usage() {
+  cat <<'EOF'
+Usage:
+  c-ask <file-or-dir> <prompt>
+  c-ask <prompt>
+  echo "..." | c-ask <prompt>
+EOF
+  exit 1
+}
+
+die() { printf '%s\n' "$*" >&2; exit 1; }
+
+[[ -z "${ANTHROPIC_API_KEY:-}" ]] && die "ANTHROPIC_API_KEY is not set"
+(( $# == 0 )) && usage
+
+is_binary() {
+  file --brief --mime-encoding "$1" 2>/dev/null | grep -qv 'ascii\|utf-8\|us-ascii\|iso-8859'
+}
+
+read_file_truncated() {
+  local f="$1"
+  local lines
+  lines=$(wc -l < "$f")
+  if (( lines > MAX_LINES_PER_FILE )); then
+    head -n "$MAX_LINES_PER_FILE" "$f"
+    printf '\n[... truncated, %d/%d lines shown ...]\n' "$MAX_LINES_PER_FILE" "$lines"
+  else
+    cat "$f"
+  fi
+}
+
+build_file_context() {
+  local path="$1"
+  printf '%s\n' "--- $path ---"
+  read_file_truncated "$path"
+  printf '\n'
+}
+
+build_dir_context() {
+  local dir="$1"
+  printf '### Directory tree ###\n'
+  eza --tree --level=2 "$dir" 2>/dev/null || tree -L 2 "$dir" 2>/dev/null || ls -R "$dir"
+  printf '\n'
+  while IFS= read -r -d '' f; do
+    if ! is_binary "$f"; then
+      build_file_context "$f"
+    fi
+  done < <(find "$dir" -maxdepth 2 -type f -print0 2>/dev/null)
+}
+
+# Parse args: figure out context source and prompt
+context=""
+prompt=""
+
+if [[ ! -t 0 ]]; then
+  # stdin piped
+  context=$(cat)
+  prompt="${*}"
+elif (( $# >= 2 )) && [[ -e "$1" ]]; then
+  # first arg is a file/dir
+  target="$1"; shift
+  prompt="${*}"
+  if [[ -f "$target" ]]; then
+    context=$(build_file_context "$target")
+  elif [[ -d "$target" ]]; then
+    context=$(build_dir_context "$target")
+  fi
+elif (( $# >= 1 )); then
+  # no file context, just a prompt
+  prompt="${*}"
+else
+  usage
+fi
+
+[[ -z "$prompt" ]] && die "No prompt provided"
+
+# Build the user message
+if [[ -n "$context" ]]; then
+  user_content="<context>
+${context}
+</context>
+
+${prompt}"
+else
+  user_content="$prompt"
+fi
+
+# Check payload size
+payload_size=${#user_content}
+if (( payload_size > MAX_PAYLOAD_BYTES )); then
+  die "Context too large (${payload_size} bytes, max ${MAX_PAYLOAD_BYTES}). Try a smaller file or directory."
+fi
+
+# Build JSON payload
+payload=$(jq -n \
+  --arg model "$MODEL" \
+  --arg content "$user_content" \
+  '{
+    model: $model,
+    max_tokens: 4096,
+    stream: true,
+    messages: [{ role: "user", content: $content }]
+  }')
+
+# Stream the response
+curl -sN https://api.anthropic.com/v1/messages \
+  -H "content-type: application/json" \
+  -H "x-api-key: ${ANTHROPIC_API_KEY}" \
+  -H "anthropic-version: 2023-06-01" \
+  -d "$payload" \
+| while IFS= read -r line; do
+  # SSE lines: "data: {...}" or "event: ..."
+  if [[ "$line" == data:* ]]; then
+    json="${line#data: }"
+    type=$(printf '%s' "$json" | jq -r '.type // empty' 2>/dev/null) || continue
+    case "$type" in
+      content_block_delta)
+        printf '%s' "$json" | jq -rj '.delta.text // empty' 2>/dev/null
+        ;;
+      error)
+        err=$(printf '%s' "$json" | jq -r '.error.message // "unknown error"' 2>/dev/null)
+        die "API error: $err"
+        ;;
+    esac
+  fi
+done
+
+# Trailing newline
+printf '\n'

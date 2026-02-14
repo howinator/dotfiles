@@ -22,3 +22,4 @@ export PATH="/opt/homebrew/opt/postgresql@16/bin:$PATH"
 export PATH=$PATH:$(go env GOPATH)/bin
 source ~/.shell/secrets.bash
 export PATH="/Users/howie/.local/bin:$PATH"
+export PATH="$HOME/dotfiles/scripts:$PATH"
