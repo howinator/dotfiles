@@ -115,6 +115,19 @@ function re_pair() {
   echo "keyboard connected"
 }
 
+function gwt() {
+  local branch="$1"
+  if [[ -z "$branch" ]]; then
+    echo "Usage: gwt <branch-name>"
+    return 1
+  fi
+  local repo_root
+  repo_root=$(git rev-parse --show-toplevel 2>/dev/null) || { echo "Not a git repository"; return 1; }
+  local repo_name=$(basename "$repo_root")
+  local worktree_path="$HOME/.worktrees/${repo_name}-${branch}"
+  git worktree add "$worktree_path" "$branch" && cd "$worktree_path"
+}
+
 # this is for claude code
 function cd() {
   if declare -f __zoxide_z &>/dev/null; then
