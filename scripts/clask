@@ -99,13 +99,17 @@ if (( payload_size > MAX_PAYLOAD_BYTES )); then
 fi
 
 # Build JSON payload
+system_prompt="Answer directly and concisely. No preamble, no filler. If showing code, just show the code. Skip explanations unless asked."
+
 payload=$(jq -n \
   --arg model "$MODEL" \
+  --arg system "$system_prompt" \
   --arg content "$user_content" \
   '{
     model: $model,
     max_tokens: 4096,
     stream: true,
+    system: $system,
     messages: [{ role: "user", content: $content }]
   }')
 
