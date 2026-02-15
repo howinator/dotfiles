@@ -5,6 +5,8 @@ export BAT_THEME=CatppuccinMocha
 export CHEAT_USE_FZF=true
 export PKG_CONFIG_PATH="/usr/local/opt/glib/lib/pkgconfig:$PKG_CONFIG_PATH"
 
+export CLASK_MODEL=anthropic/claude-3.5-haiku
+
 # pyenv install
 export PYENV_ROOT="$HOME/.pyenv"
 [[ -d $PYENV_ROOT/bin ]] && export PATH="$PYENV_ROOT/bin:$PATH"
