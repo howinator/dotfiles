@@ -15,6 +15,12 @@ if [[ -z "$branch" || "$branch" == "HEAD" ]]; then
   exit 0
 fi
 
+# Main/master branches get a neutral grey dot
+if [[ "$branch" == "main" || "$branch" == "master" ]]; then
+  printf '⚪'
+  exit 0
+fi
+
 # Cache to avoid hammering the GitHub API every status-interval
 cache_dir="/tmp/tmux-pr-status"
 mkdir -p "$cache_dir"
