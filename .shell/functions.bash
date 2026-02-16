@@ -132,6 +132,12 @@ function gwt() {
   else
     git worktree add -b "$branch" "$worktree_path" && cd "$worktree_path"
   fi
+
+  # Symlink .claude/settings.local.json so permissions carry over
+  if [[ -f "$repo_root/.claude/settings.local.json" && ! -e "$worktree_path/.claude/settings.local.json" ]]; then
+    mkdir -p "$worktree_path/.claude"
+    ln -sf "$repo_root/.claude/settings.local.json" "$worktree_path/.claude/settings.local.json"
+  fi
 }
 
 function gwt-clean() {
@@ -182,14 +188,8 @@ function tmuxwt() {
   local repo_name=$(basename "$repo_root")
   local worktree_path="$HOME/.worktrees/${repo_name}-${branch}"
 
-  # Create worktree if needed (same logic as gwt)
-  if [[ ! -d "$worktree_path" ]]; then
-    if git show-ref --verify --quiet "refs/heads/${branch}"; then
-      git worktree add "$worktree_path" "$branch" || return 1
-    else
-      git worktree add -b "$branch" "$worktree_path" || return 1
-    fi
-  fi
+  # Create worktree + symlink claude settings via gwt
+  gwt "$branch" || return 1
 
   # Window name: first 16 chars of branch
   local window_name="${branch:0:16}"
