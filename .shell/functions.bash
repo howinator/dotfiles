@@ -154,6 +154,65 @@ function yolopr() {
   gh pr create --fill && gh pr merge --auto --squash && gh pr view --web
 }
 
+function gh() {
+  command gh "$@"
+  local rc=$?
+  if [[ $rc -eq 0 && "$1" == "pr" && ("$2" == "create" || "$2" == "merge" || "$2" == "close" || "$2" == "reopen") ]]; then
+    local repo_root branch cache_key
+    repo_root=$(git rev-parse --show-toplevel 2>/dev/null)
+    branch=$(git rev-parse --abbrev-ref HEAD 2>/dev/null)
+    if [[ -n "$repo_root" && -n "$branch" ]]; then
+      cache_key=$(printf '%s:%s' "$repo_root" "$branch" | md5 -q)
+      rm -f "/tmp/tmux-pr-status/$cache_key" 2>/dev/null
+    fi
+  fi
+  return $rc
+}
+
+
+function tmuxwt() {
+  local branch="$1"
+  if [[ -z "$branch" ]]; then
+    echo "Usage: tmuxwt <branch-name>"
+    return 1
+  fi
+
+  local repo_root
+  repo_root=$(git rev-parse --show-toplevel 2>/dev/null) || { echo "Not a git repository"; return 1; }
+  local repo_name=$(basename "$repo_root")
+  local worktree_path="$HOME/.worktrees/${repo_name}-${branch}"
+
+  # Create worktree if needed (same logic as gwt)
+  if [[ ! -d "$worktree_path" ]]; then
+    if git show-ref --verify --quiet "refs/heads/${branch}"; then
+      git worktree add "$worktree_path" "$branch" || return 1
+    else
+      git worktree add -b "$branch" "$worktree_path" || return 1
+    fi
+  fi
+
+  # Window name: first 16 chars of branch
+  local window_name="${branch:0:16}"
+
+  # Create tmux window at worktree path
+  tmux new-window -c "$worktree_path" -n "$window_name"
+
+  # Mark window so the after-new-window hook doesn't double-run
+  tmux set-option -w @tmux-window-scripted 1
+
+  # Run repo-specific tmux script if it exists
+  local tmux_script=""
+  if [[ -f "$worktree_path/.tmux-window.sh" ]]; then
+    tmux_script="$worktree_path/.tmux-window.sh"
+  elif [[ -f "$repo_root/.tmux-window.sh" ]]; then
+    tmux_script="$repo_root/.tmux-window.sh"
+  fi
+
+  if [[ -n "$tmux_script" ]]; then
+    tmux run-shell -b "bash '$tmux_script' '$worktree_path'"
+  fi
+}
+
 # this is for claude code
 function cd() {
   if declare -f __zoxide_z &>/dev/null; then
