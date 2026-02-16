@@ -150,6 +150,10 @@ function gwt-clean() {
   git branch -d "$branch"
 }
 
+function yolopr() {
+  gh pr create --fill && gh pr merge --auto --squash && gh pr view --web
+}
+
 # this is for claude code
 function cd() {
   if declare -f __zoxide_z &>/dev/null; then
