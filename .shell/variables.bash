@@ -5,11 +5,14 @@ export BAT_THEME=CatppuccinMocha
 export CHEAT_USE_FZF=true
 export PKG_CONFIG_PATH="/usr/local/opt/glib/lib/pkgconfig:$PKG_CONFIG_PATH"
 
-export CLASK_MODEL=anthropic/claude-3.5-haiku
+export CLASK_MODEL=anthropic/claude-haiku-4-5-20251001
 
 # pyenv install
 export PYENV_ROOT="$HOME/.pyenv"
 [[ -d $PYENV_ROOT/bin ]] && export PATH="$PYENV_ROOT/bin:$PATH"
+
+
+[[ -f ~/.shell/secrets.bash ]] && source ~/.shell/secrets.bash
 
 ### PATH STUFF ###
 export PATH="$HOME/.local/bin:$PATH"
@@ -22,6 +25,5 @@ export PATH="$PATH:/Users/howiebenefiel/.local/bin" # for pipx
 export PATH="$PATH:$HOME/.cargo/bin"
 export PATH="/opt/homebrew/opt/postgresql@16/bin:$PATH"
 export PATH=$PATH:$(go env GOPATH)/bin
-source ~/.shell/secrets.bash
 export PATH="/Users/howie/.local/bin:$PATH"
 export PATH="$HOME/dotfiles/scripts:$PATH"
