@@ -160,6 +160,10 @@ function yolopr() {
   gh pr create --fill && gh pr merge --auto --squash && gh pr view --web
 }
 
+function wtfd() {
+  git worktree list --porcelain | grep -B2 "branch refs/heads/$1" | grep "^worktree " | cut -d' ' -f2
+}
+
 function gh() {
   command gh "$@"
   local rc=$?
