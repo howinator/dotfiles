@@ -192,8 +192,8 @@ function tmuxwt() {
   local repo_name=$(basename "$repo_root")
   local worktree_path="$HOME/.worktrees/${repo_name}-${branch}"
 
-  # Create worktree + symlink claude settings via gwt
-  gwt "$branch" || return 1
+  # Create worktree + symlink claude settings (subshell so calling shell stays put)
+  (gwt "$branch") || return 1
 
   # Window name: first 16 chars of branch
   local window_name="${branch:0:16}"
