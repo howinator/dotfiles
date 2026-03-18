@@ -170,3 +170,13 @@ if [ -f '/Users/howie/Downloads/google-cloud-sdk/completion.zsh.inc' ]; then . '
 export GPG_TTY=$(tty)
 
 [ -z "$DISABLE_ZOXIDE" ] && eval "$(zoxide init --cmd cd zsh)"
+
+. "$HOME/.local/bin/env"
+
+# pnpm
+export PNPM_HOME="/Users/howie/Library/pnpm"
+case ":$PATH:" in
+  *":$PNPM_HOME:"*) ;;
+  *) export PATH="$PNPM_HOME:$PATH" ;;
+esac
+# pnpm end
