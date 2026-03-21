@@ -2,7 +2,6 @@
   "env": {
     "DISABLE_ZOXIDE": "1"
   },
-  "model": "opus",
   "hooks": {
     "SessionStart": [
       {
@@ -59,5 +58,6 @@
       }
     ]
   },
-  "alwaysThinkingEnabled": true
+  "alwaysThinkingEnabled": true,
+  "skipDangerousModePermissionPrompt": true
 }
