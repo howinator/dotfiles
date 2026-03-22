@@ -172,7 +172,14 @@ function gwt-clean() {
 
   cd "$main_worktree"
   git worktree remove "$worktree_path"
-  git branch -d "$branch"
+  if ! git branch -d "$branch" 2>/dev/null; then
+    git fetch --prune
+    if git branch -r --merged | grep -q "origin/$branch"; then
+      git branch -D "$branch"
+    else
+      echo "Branch '$branch' is not merged locally or on remote. Use 'git branch -D $branch' to force delete."
+    fi
+  fi
 }
 
 function yolopr() {

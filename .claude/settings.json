@@ -1,66 +1,66 @@
 {
+  "alwaysThinkingEnabled": true,
+  "enabledPlugins": {
+    "rust-analyzer-lsp@claude-plugins-official": true
+  },
   "env": {
     "DISABLE_ZOXIDE": "1"
   },
   "hooks": {
-    "SessionStart": [
+    "Notification": [
       {
         "hooks": [
           {
-            "type": "command",
-            "command": "claug start",
-            "timeout": 5
+            "command": "$HOME/.claude/hooks/notify.sh",
+            "timeout": 5,
+            "type": "command"
           }
-        ]
+        ],
+        "matcher": "permission_prompt"
+      },
+      {
+        "hooks": [
+          {
+            "command": "$HOME/.claude/hooks/notify.sh",
+            "timeout": 5,
+            "type": "command"
+          }
+        ],
+        "matcher": "idle_prompt"
+      },
+      {
+        "hooks": [
+          {
+            "command": "$HOME/.claude/hooks/notify.sh",
+            "timeout": 5,
+            "type": "command"
+          }
+        ],
+        "matcher": "elicitation_dialog"
       }
     ],
     "SessionEnd": [
       {
         "hooks": [
           {
-            "type": "command",
             "command": "claug stop",
-            "timeout": 5
+            "timeout": 5,
+            "type": "command"
           }
         ]
       }
     ],
-    "Notification": [
+    "SessionStart": [
       {
-        "matcher": "permission_prompt",
         "hooks": [
           {
-            "type": "command",
-            "command": "$HOME/.claude/hooks/notify.sh",
-            "timeout": 5
-          }
-        ]
-      },
-      {
-        "matcher": "idle_prompt",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "$HOME/.claude/hooks/notify.sh",
-            "timeout": 5
-          }
-        ]
-      },
-      {
-        "matcher": "elicitation_dialog",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "$HOME/.claude/hooks/notify.sh",
-            "timeout": 5
+            "command": "claug start",
+            "timeout": 5,
+            "type": "command"
           }
         ]
       }
     ]
   },
-  "alwaysThinkingEnabled": true,
-  "skipDangerousModePermissionPrompt": true,
-  "enabledPlugins": {
-    "rust-analyzer-lsp@claude-plugins-official": true
-  }
+  "skipDangerousModePermissionPrompt": true
 }
