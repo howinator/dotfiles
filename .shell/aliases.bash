@@ -35,5 +35,8 @@ alias rgi='rg --hidden --no-ignore'
 
 alias tailscale="/Applications/Tailscale.app/Contents/MacOS/Tailscale"
 
+alias pg-home='psql "postgresql://postgres:${HOME_SUPERUSER_DB_PASS}@192.168.1.110:5432/?sslmode=require"'
+alias pg-claug='psql "postgresql://postgres:${HOME_SUPERUSER_DB_PASS}@192.168.1.110:5432/claug?sslmode=require"'
+
 # Remove OMZ git plugin alias so our gwt function works
 unalias gwt 2>/dev/null
