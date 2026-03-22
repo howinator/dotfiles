@@ -151,6 +151,25 @@ function gwt-clean() {
   fi
   local main_worktree
   main_worktree=$(git worktree list --porcelain | head -1 | sed 's/worktree //')
+
+  # Merge worktree permissions into main repo's settings.local.json
+  local wt_settings="$worktree_path/.claude/settings.local.json"
+  local main_settings="$main_worktree/.claude/settings.local.json"
+  if [[ -f "$wt_settings" && ! -L "$wt_settings" ]]; then
+    if [[ -f "$main_settings" ]]; then
+      local merged
+      merged=$(jq -s '
+        (.[0].permissions.allow // []) as $main |
+        (.[1].permissions.allow // []) as $wt |
+        .[0] * { permissions: { allow: ($main + ($wt - $main)) } }
+      ' "$main_settings" "$wt_settings") && echo "$merged" > "$main_settings"
+    else
+      mkdir -p "$main_worktree/.claude"
+      cp "$wt_settings" "$main_settings"
+    fi
+    echo "Merged worktree permissions into $main_settings"
+  fi
+
   cd "$main_worktree"
   git worktree remove "$worktree_path"
   git branch -d "$branch"
