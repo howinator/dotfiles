@@ -173,11 +173,12 @@ function gwt-clean() {
   cd "$main_worktree"
   git worktree remove "$worktree_path"
   if ! git branch -d "$branch" 2>/dev/null; then
-    git fetch --prune
-    if git branch -r --merged | grep -q "origin/$branch"; then
-      git branch -D "$branch"
+    # git branch -d doesn't detect squash-merges. Instead, check if the
+    # remote branch was deleted (GitHub removes it after merge).
+    if git ls-remote --heads origin "$branch" | grep -q "$branch"; then
+      echo "Branch '$branch' still exists on remote and is not merged. Use 'git branch -D $branch' to force delete."
     else
-      echo "Branch '$branch' is not merged locally or on remote. Use 'git branch -D $branch' to force delete."
+      git branch -D "$branch"
     fi
   fi
 }
