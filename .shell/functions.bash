@@ -140,6 +140,74 @@ function gwt() {
   fi
 }
 
+function cleanwt() {
+  local debug=false
+  [[ "$1" == "-v" ]] && debug=true
+
+  local worktree_path
+  worktree_path=$(git rev-parse --show-toplevel 2>/dev/null) || { echo "Not a git repository"; return 1; }
+  local branch
+  branch=$(git rev-parse --abbrev-ref HEAD 2>/dev/null) || { echo "Could not determine branch"; return 1; }
+  if [[ "$worktree_path" != "$HOME/.worktrees/"* ]]; then
+    echo "Not in a worktree managed by gwt"
+    return 1
+  fi
+  local main_worktree
+  main_worktree=$(git worktree list --porcelain | head -1 | sed 's/worktree //')
+  $debug && echo "[cleanwt] worktree=$worktree_path branch=$branch main=$main_worktree"
+
+  # Run ondestroy from .tmux-window.sh first, before any cleanup
+  local tmux_script=""
+  if [[ -f "$worktree_path/.tmux-window.sh" ]]; then
+    tmux_script="$worktree_path/.tmux-window.sh"
+  elif [[ -f "$main_worktree/.tmux-window.sh" ]]; then
+    tmux_script="$main_worktree/.tmux-window.sh"
+  fi
+  if [[ -n "$tmux_script" ]]; then
+    if grep -qE '^(function )?ondestroy[[:space:]]*\(' "$tmux_script"; then
+      $debug && echo "[cleanwt] running ondestroy from $tmux_script"
+      bash "$tmux_script" ondestroy "$worktree_path"
+    else
+      $debug && echo "[cleanwt] no ondestroy function in $tmux_script"
+    fi
+  else
+    $debug && echo "[cleanwt] no .tmux-window.sh found"
+  fi
+
+  # Merge worktree permissions into main repo's settings.local.json
+  local wt_settings="$worktree_path/.claude/settings.local.json"
+  local main_settings="$main_worktree/.claude/settings.local.json"
+  if [[ -f "$wt_settings" && ! -L "$wt_settings" ]]; then
+    if [[ -f "$main_settings" ]]; then
+      local merged
+      merged=$(jq -s '
+        (.[0].permissions.allow // []) as $main |
+        (.[1].permissions.allow // []) as $wt |
+        .[0] * { permissions: { allow: ($main + ($wt - $main)) } }
+      ' "$main_settings" "$wt_settings") && echo "$merged" > "$main_settings"
+    else
+      mkdir -p "$main_worktree/.claude"
+      cp "$wt_settings" "$main_settings"
+    fi
+    echo "Merged worktree permissions into $main_settings"
+  fi
+
+  cd "$main_worktree"
+  # Remove worktree — use force twice to handle untracked files
+  if ! git worktree remove --force --force "$worktree_path" 2>/dev/null; then
+    echo "Warning: git worktree remove failed, removing directory manually"
+    rm -rf "$worktree_path"
+    git worktree prune
+  fi
+  if ! git branch -d "$branch" 2>/dev/null; then
+    if git ls-remote --heads origin "$branch" | grep -q "$branch"; then
+      echo "Branch '$branch' still exists on remote and is not merged. Use 'git branch -D $branch' to force delete."
+    else
+      git branch -D "$branch"
+    fi
+  fi
+}
+
 function gwt-clean() {
   local worktree_path
   worktree_path=$(git rev-parse --show-toplevel 2>/dev/null) || { echo "Not a git repository"; return 1; }
@@ -171,7 +239,10 @@ function gwt-clean() {
   fi
 
   cd "$main_worktree"
-  git worktree remove "$worktree_path"
+  if ! git worktree remove --force "$worktree_path"; then
+    echo "Failed to remove worktree at $worktree_path"
+    return 1
+  fi
   if ! git branch -d "$branch" 2>/dev/null; then
     # git branch -d doesn't detect squash-merges. Instead, check if the
     # remote branch was deleted (GitHub removes it after merge).
@@ -240,7 +311,11 @@ function tmuxwt() {
   fi
 
   if [[ -n "$tmux_script" ]]; then
-    tmux run-shell -b "bash '$tmux_script' '$worktree_path'"
+    if grep -qE '^(function )?oncreate[[:space:]]*\(' "$tmux_script"; then
+      tmux run-shell -b "bash '$tmux_script' oncreate '$worktree_path'"
+    else
+      tmux run-shell -b "bash '$tmux_script' '$worktree_path'"
+    fi
   fi
 }
 

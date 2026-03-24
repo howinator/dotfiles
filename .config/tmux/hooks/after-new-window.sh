@@ -14,7 +14,11 @@ dir="$pane_path"
 while [[ "$dir" != "/" ]]; do
   if [[ -f "$dir/.tmux-window.sh" ]]; then
     tmux set-option -w @tmux-window-scripted 1
-    bash "$dir/.tmux-window.sh" "$pane_path"
+    if grep -qE '^(function )?oncreate[[:space:]]*\(' "$dir/.tmux-window.sh"; then
+      bash "$dir/.tmux-window.sh" oncreate "$pane_path"
+    else
+      bash "$dir/.tmux-window.sh" "$pane_path"
+    fi
     exit 0
   fi
   dir=$(dirname "$dir")
