@@ -11,7 +11,6 @@ export CLASK_MODEL="anthropic/claude-haiku-4.5"
 export PYENV_ROOT="$HOME/.pyenv"
 [[ -d $PYENV_ROOT/bin ]] && export PATH="$PYENV_ROOT/bin:$PATH"
 
-
 [[ -f ~/.shell/secrets.bash ]] && source ~/.shell/secrets.bash
 
 ### PATH STUFF ###
@@ -27,3 +26,5 @@ export PATH="/opt/homebrew/opt/postgresql@16/bin:$PATH"
 export PATH=$PATH:$(go env GOPATH)/bin
 export PATH="/Users/howie/.local/bin:$PATH"
 export PATH="$HOME/dotfiles/scripts:$PATH"
+# opencode
+export PATH=/Users/howie/.opencode/bin:$PATH
