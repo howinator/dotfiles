@@ -1,0 +1,32 @@
+# Font
+font-family = JetBrainsMono Nerd Font Mono
+font-size = 10
+
+# Window
+window-padding-x = 10
+window-padding-y = 10
+
+# Cursor
+cursor-style = block
+shell-integration-features = no-cursor
+
+# Background
+background-opacity = 0.9
+background-blur-radius = 20
+
+# macOS
+macos-option-as-alt = true
+
+# Clipboard (OSC 52)
+clipboard-read = allow
+clipboard-write = allow
+
+# Theme (Catppuccin Mocha)
+theme = Catppuccin Mocha
+
+# Keybind for tmux compatibility - make sure prefix works
+keybind = ctrl+space=unbind
+
+# Window management
+window-decoration = auto
+confirm-close-surface = false
