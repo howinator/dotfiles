@@ -30,3 +30,7 @@ keybind = ctrl+space=unbind
 # Window management
 window-decoration = auto
 confirm-close-surface = false
+
+# Change icon
+macos-icon = custom
+macos-custom-icon = /Users/howie/.config/ghostty/catppuccin-mocha.icns
