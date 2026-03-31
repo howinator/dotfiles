@@ -1,10 +1,13 @@
 return {
   {
     "nvim-treesitter/nvim-treesitter",
-    dependencies = { "HiPhish/rainbow-delimiters.nvim" },
     opts = {
       ensure_installed = {
         "bash",
+        "go",
+        "gomod",
+        "gosum",
+        "gowork",
         "html",
         "javascript",
         "json",
@@ -20,9 +23,14 @@ return {
         "yaml",
         "rust",
       },
-      rainbow = {
-        enable = true,
-      },
     },
+  },
+  {
+    "HiPhish/rainbow-delimiters.nvim",
+    submodules = false,
+    event = "BufReadPost",
+    config = function()
+      require("rainbow-delimiters.setup").setup({})
+    end,
   },
 }

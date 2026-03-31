@@ -6,5 +6,9 @@ vim.g.root_spec = { "cwd" }
 vim.opt.number = true
 vim.opt.relativenumber = true
 vim.g.lazyvim_eslint_auto_format = true
-vim.opt.foldmethod = "expr"
-vim.opt.foldexpr = "v:lua.vim.treesitter.foldexpr()"
+
+-- Folding managed by nvim-ufo
+vim.opt.foldcolumn = "1"
+vim.opt.foldlevel = 99
+vim.opt.foldlevelstart = 99
+vim.opt.foldenable = true

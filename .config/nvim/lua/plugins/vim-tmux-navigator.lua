@@ -1,4 +1,4 @@
-return { -- add symbols-outline
+return {
   "christoomey/vim-tmux-navigator",
   cmd = {
     "TmuxNavigateLeft",
