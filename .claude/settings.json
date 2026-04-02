@@ -11,41 +11,38 @@
       {
         "hooks": [
           {
+            "type": "command",
             "command": "$HOME/.claude/hooks/notify.sh",
-            "timeout": 5,
-            "type": "command"
+            "timeout": 5
           }
-        ],
-        "matcher": "permission_prompt"
+        ]
       },
       {
         "hooks": [
           {
+            "type": "command",
             "command": "$HOME/.claude/hooks/notify.sh",
-            "timeout": 5,
-            "type": "command"
+            "timeout": 5
           }
-        ],
-        "matcher": "idle_prompt"
+        ]
       },
       {
         "hooks": [
           {
+            "type": "command",
             "command": "$HOME/.claude/hooks/notify.sh",
-            "timeout": 5,
-            "type": "command"
+            "timeout": 5
           }
-        ],
-        "matcher": "elicitation_dialog"
+        ]
       }
     ],
     "SessionEnd": [
       {
         "hooks": [
           {
+            "type": "command",
             "command": "claug stop",
-            "timeout": 5,
-            "type": "command"
+            "timeout": 5
           }
         ]
       }
@@ -54,9 +51,9 @@
       {
         "hooks": [
           {
+            "type": "command",
             "command": "claug start",
-            "timeout": 5,
-            "type": "command"
+            "timeout": 5
           }
         ]
       }
