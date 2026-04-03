@@ -1,4 +1,3 @@
-#source <(/opt/homebrew/bin/fzf --zsh)
 # Capture tmux pane location for Claude Code hooks
 if [ -n "$TMUX" ] && [ -z "$TMUX_LOCATION" ]; then
   export TMUX_LOCATION=$(tmux display-message -p '#{session_name}:#{window_index}.#{pane_index}')
@@ -23,11 +22,6 @@ fi
 
 source "${ZINIT_HOME}/zinit.zsh"
 
-# Use prompt
-#zinit ice as"command" from"gh-r" \
-#          atclone"./starship init zsh > init.zsh; ./starship completions zsh > _starship" \
-#         atpull"%atclone" src"init.zsh"
-#zinit light starship/starship
 zinit ice depth"1"; zinit light romkatv/powerlevel10k
 
 # Use plugins

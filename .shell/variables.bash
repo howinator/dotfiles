@@ -17,14 +17,11 @@ export PYENV_ROOT="$HOME/.pyenv"
 export PATH="$HOME/.local/bin:$PATH"
 export PATH="/opt/homebrew/bin:$PATH"
 export PATH="/usr/local/bin:$PATH"
-export PATH="/Users/howiebenefiel/.local/bin:$PATH"
 export PATH="/usr/local/go/bin:$PATH"
-export PATH="$PATH:/Users/howiebenefiel/Library/Application Support/JetBrains/Toolbox/scripts"
-export PATH="$PATH:/Users/howiebenefiel/.local/bin" # for pipx
+export PATH="$PATH:$HOME/Library/Application Support/JetBrains/Toolbox/scripts"
 export PATH="$PATH:$HOME/.cargo/bin"
 export PATH="/opt/homebrew/opt/postgresql@16/bin:$PATH"
 export PATH=$PATH:$(go env GOPATH)/bin
-export PATH="/Users/howie/.local/bin:$PATH"
 export PATH="$HOME/dotfiles/scripts:$PATH"
 # opencode
 export PATH=/Users/howie/.opencode/bin:$PATH

@@ -5,7 +5,7 @@ git_delete_remote_tag() {
 
 git_rename_branch() {
   current_branch=$(git rev-parse --abbrev-ref HEAD)
-  if [[ "$current_ branch" == 'master' ||  "$current_branch" == 'develop' || "$current_branch" == 'heapjs-develop' ]]; then
+  if [[ "$current_branch" == 'main' ||  "$current_branch" == 'develop' ]]; then
     echo "try not to delete an important branch next time"
     exit 1
   fi
@@ -46,7 +46,7 @@ function frg {
   fi
 }
 
-funcion readme() {
+function readme() {
   bat ~/dotfiles/README.md
 }
 
