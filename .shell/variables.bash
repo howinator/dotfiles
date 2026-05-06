@@ -1,7 +1,7 @@
 export XDG_CONFIG_HOME="$HOME/.config"
 export AWS_DEFAULT_PROFILE=engineer
 export EDITOR=nvim
-export BAT_THEME=CatppuccinMocha
+export BAT_THEME="Catppuccin Mocha"
 export CHEAT_USE_FZF=true
 export PKG_CONFIG_PATH="/usr/local/opt/glib/lib/pkgconfig:$PKG_CONFIG_PATH"
 
@@ -25,3 +25,4 @@ export PATH=$PATH:$(go env GOPATH)/bin
 export PATH="$HOME/dotfiles/scripts:$PATH"
 # opencode
 export PATH=/Users/howie/.opencode/bin:$PATH
+export PATH="$PATH:$HOME/bin"

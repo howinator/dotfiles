@@ -41,3 +41,4 @@ alias pg-claug='psql "postgresql://postgres:${HOME_SUPERUSER_DB_PASS}@192.168.1.
 
 # Remove OMZ git plugin alias so our gwt function works
 unalias gwt 2>/dev/null
+alias sola-sso="source ~/bin/sola-sso.sh"

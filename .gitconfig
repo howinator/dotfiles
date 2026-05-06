@@ -1,5 +1,5 @@
 [user]
-	email = 5847863+howinator@users.noreply.github.com
+	email = howie@sola-solutions.com
 	name = Howie Benefiel
 [commit]
 	gpgsign = true
@@ -39,3 +39,5 @@
   path = ~/.gitconfig.local
 [gpg]
 	program = gpg
+[url "git@github.com:Sola-Solutions/"]
+	insteadOf = https://github.com/Sola-Solutions/
