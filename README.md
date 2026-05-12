@@ -40,6 +40,53 @@
 - Lots of youtube videos and this [repo](https://github.com/johnalanwoods/maintained-modern-unix)
 
 
+# tmuxwt + .tmux-window.sh
+
+`tmuxwt <branch>` creates a git worktree at `~/.worktrees/<repo>-<branch>` and opens a new tmux window in it. If the repo has a `.tmux-window.sh` at its root, tmuxwt invokes it to lay out the new window.
+
+The script is invoked from the *parent* shell (the one that ran `tmuxwt`) immediately after `tmux new-window` returns the new window's ID — there is no tmux hook involved. This means the script is never racing against user keypresses for "which window is active."
+
+## Contract
+
+The script is called as:
+
+    bash .tmux-window.sh oncreate <work_dir> <window_id>
+
+if it defines an `oncreate()` function, or otherwise:
+
+    bash .tmux-window.sh <work_dir> <window_id>
+
+Arguments:
+- `<work_dir>` — the worktree's absolute path. Use this for `-c` flags and any `cd`/path operations.
+- `<window_id>` — the tmux window ID (e.g. `@7`). **All `tmux` commands in the script must target this window explicitly** via `-t "$W"` (for the window) or `-t "$W.N"` (for pane N). Do *not* use `:.N`, `tmux display-message`, or any other "current window" lookup — the user may have switched tmux focus before your script runs, and you'd split the wrong window.
+
+The script may also define `ondestroy()`, which `cleanwt` invokes when tearing down the worktree.
+
+tmuxwt searches first for `<worktree>/.tmux-window.sh`, then falls back to `<main-repo>/.tmux-window.sh` (since a fresh branch may not have the file committed). The script is run in the background so `tmuxwt` returns immediately.
+
+## Example
+
+```bash
+oncreate() {
+  local WORK_DIR="$1"
+  local W="$2"
+
+  # Layout: bottom row (30%), then split bottom horizontally
+  tmux split-window -t "$W.1" -v -c "$WORK_DIR" -p 30
+  tmux split-window -t "$W.2" -h -c "$WORK_DIR"
+
+  tmux send-keys -t "$W.1" "claude" Enter
+  tmux send-keys -t "$W.2" "pnpm install" Enter
+}
+
+ondestroy() {
+  local WORK_DIR="$1"
+  # Stop long-running services, etc.
+}
+
+"$@"
+```
+
 # TODOs
 - Find better theme for bat and the terminal. 
   I'd love tokyo hack but I can't find it in .tmTheme

@@ -121,8 +121,11 @@ function gwt() {
     echo "Usage: gwt <branch-name>"
     return 1
   fi
+  git rev-parse --is-inside-work-tree >/dev/null 2>&1 || { echo "Not a git repository"; return 1; }
+  # Use the main worktree so calling gwt from inside a linked worktree still
+  # resolves paths against the original repo.
   local repo_root
-  repo_root=$(git rev-parse --show-toplevel 2>/dev/null) || { echo "Not a git repository"; return 1; }
+  repo_root=$(git worktree list --porcelain | head -1 | sed 's/^worktree //')
   local repo_name=$(basename "$repo_root")
   local worktree_path="$HOME/.worktrees/${repo_name}-${branch}"
   if [[ -d "$worktree_path" ]]; then
@@ -285,24 +288,29 @@ function tmuxwt() {
     return 1
   fi
 
+  git rev-parse --is-inside-work-tree >/dev/null 2>&1 || { echo "Not a git repository"; return 1; }
+  # Resolve the main worktree so tmuxwt works correctly when called from inside
+  # an existing linked worktree.
   local repo_root
-  repo_root=$(git rev-parse --show-toplevel 2>/dev/null) || { echo "Not a git repository"; return 1; }
+  repo_root=$(git worktree list --porcelain | head -1 | sed 's/^worktree //')
   local repo_name=$(basename "$repo_root")
   local worktree_path="$HOME/.worktrees/${repo_name}-${branch}"
 
   # Create worktree + symlink claude settings (subshell so calling shell stays put)
   (gwt "$branch") || return 1
 
-  # Window name: first 16 chars of branch
-  local window_name="${branch:0:16}"
+  # Window name: first 24 chars of branch, stripping the `howie/` user prefix
+  local display_branch="${branch#howie/}"
+  local window_name="${display_branch:0:24}"
 
-  # Create tmux window at worktree path
-  tmux new-window -c "$worktree_path" -n "$window_name"
+  # Create the new tmux window and capture its ID so we can pass it to the
+  # script for explicit -t targeting (no racing on "active window").
+  local window_id
+  window_id=$(tmux new-window -P -F '#{window_id}' -c "$worktree_path" -n "$window_name") || return 1
 
-  # Mark window so the after-new-window hook doesn't double-run
-  tmux set-option -w @tmux-window-scripted 1
-
-  # Run repo-specific tmux script if it exists
+  # Resolve which .tmux-window.sh to run, preferring the worktree's own copy
+  # and falling back to the main repo (mirrors cleanwt). The worktree may not
+  # have the file if it isn't committed on that branch.
   local tmux_script=""
   if [[ -f "$worktree_path/.tmux-window.sh" ]]; then
     tmux_script="$worktree_path/.tmux-window.sh"
@@ -311,11 +319,14 @@ function tmuxwt() {
   fi
 
   if [[ -n "$tmux_script" ]]; then
+    # Background so tmuxwt returns immediately; slow filesystem prep inside
+    # the script (rsync etc.) doesn't block the calling shell.
     if grep -qE '^(function )?oncreate[[:space:]]*\(' "$tmux_script"; then
-      tmux run-shell -b "bash '$tmux_script' oncreate '$worktree_path'"
+      bash "$tmux_script" oncreate "$worktree_path" "$window_id" &
     else
-      tmux run-shell -b "bash '$tmux_script' '$worktree_path'"
+      bash "$tmux_script" "$worktree_path" "$window_id" &
     fi
+    disown 2>/dev/null
   fi
 }
 

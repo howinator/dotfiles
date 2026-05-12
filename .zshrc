@@ -26,39 +26,23 @@ zinit ice depth"1"; zinit light romkatv/powerlevel10k
 
 # Use plugins
 zinit light zsh-users/zsh-syntax-highlighting
-zinit light zsh-users/zsh-completions
 zinit light zsh-users/zsh-autosuggestions
-zinit light Aloxaf/fzf-tab
 
 ## OMZ Plugins
 zinit snippet OMZP::git
 
 ## Custom-ish plugins
 
-### eza completions
-zinit ice as"completion" depth=1 pick"completions/zsh/_eza"; zinit light eza-community/eza
 ### Load direnv (faster) https://zdharma-continuum.github.io/zinit/wiki/Direnv-explanation/
 zinit from"gh-r" as"program" mv"direnv* -> direnv" \
     atclone'./direnv hook zsh > zhook.zsh' atpull'%atclone' \
     pick"direnv" src="zhook.zsh" for \
         direnv/direnv
-### This is specifically for poetry and rust. shell completions were put here. Must come before compinit
-fpath+=~/.zfunc
 ### Install fzf git
 zinit ice depth=1 pick"fzf-git.sh"; zinit light junegunn/fzf-git.sh
-### Get docker completions
-zinit ice as"completion"
-zinit snippet https://github.com/docker/cli/blob/master/contrib/completion/zsh/_docker
-### Cheat fzf integration
-#### :TODO: this is not currently working?
-zinit ice as"completion" depth=1 pick"scripts/cheat.zsh"
-zinit light cheat/cheat
 
-
-# Load completions
-autoload -U compinit && compinit
-## Make zinit go fast?
-zinit cdreplay -q
+# Load completion plugins, compinit, and completion styling
+source $HOME/.shell/completions.bash
 
 # Enable emacs key bindings
 bindkey -e
@@ -82,19 +66,6 @@ setopt hist_ignore_all_dups
 setopt hist_save_no_dups
 setopt hist_ignore_dups
 setopt hist_find_no_dups
-
-# zstyle stuff
-## Allows case-insensitive matching in auto-completion
-zstyle ':completion:*' matcher-list 'm:{a-z}={A-Za-z}'
-zstyle ':completion:*' list-colors "${(s.:.)LS_COLORS}"
-zstyle ':completion:*' menu no # disable default menu when using fzf-tab
-zstyle ':fzf-tab:complete:cd:*' fzf-preview 'eza --color=always --icons -1 $realpath' # use fzf with eza for cd autocomplete
-zstyle ':fzf-tab:complete:__zoxide_z:*' fzf-preview 'eza --color=always --icons -1 $realpath'
-## Allow docker "option stacking" e.g. docker run -it will work
-zstyle ':completion:*:*:docker:*' option-stacking yes
-zstyle ':completion:*:*:docker-*:*' option-stacking yes
-#zstyle ':completion:*:*:cheat:*'  # try to make cheat completion work
-
 
 # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
@@ -150,16 +121,12 @@ cyan="#2CF9ED"
 
 export FZF_DEFAULT_OPTS="--color=fg:${fg},bg:${bg},hl:${purple},fg+:${fg},bg+:${bg_highlight},hl+:${purple},info:${blue},prompt:${cyan},pointer:${cyan},marker:${cyan},spinner:${cyan},header:${cyan}"
 
-
-export NVM_DIR="$HOME/.nvm"
-  [ -s "/opt/homebrew/opt/nvm/nvm.sh" ] && \. "/opt/homebrew/opt/nvm/nvm.sh"  # This loads nvm
-  [ -s "/opt/homebrew/opt/nvm/etc/bash_completion.d/nvm" ] && \. "/opt/homebrew/opt/nvm/etc/bash_completion.d/nvm"  # This loads nvm bash_completion
+export NVM_DIR="$HOME/.config/nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
+[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
 
 # The next line updates PATH for the Google Cloud SDK.
 if [ -f '/Users/howie/Downloads/google-cloud-sdk/path.zsh.inc' ]; then . '/Users/howie/Downloads/google-cloud-sdk/path.zsh.inc'; fi
-
-# The next line enables shell command completion for gcloud.
-if [ -f '/Users/howie/Downloads/google-cloud-sdk/completion.zsh.inc' ]; then . '/Users/howie/Downloads/google-cloud-sdk/completion.zsh.inc'; fi
 
 export GPG_TTY=$(tty)
 
