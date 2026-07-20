@@ -5,7 +5,7 @@ git_delete_remote_tag() {
 
 git_rename_branch() {
   current_branch=$(git rev-parse --abbrev-ref HEAD)
-  if [[ "$current_branch" == 'main' ||  "$current_branch" == 'develop' ]]; then
+  if [[ "$current_branch" == 'main' || "$current_branch" == 'develop' ]]; then
     echo "try not to delete an important branch next time"
     exit 1
   fi
@@ -18,7 +18,7 @@ idea() {
   open -na "/Applications/IntelliJ IDEA.app" --args "$@"
 }
 
-brew-install () {
+brew-install() {
   echo "$@"
   brew install "$@" || return
   brew bundle dump --file=~/dotfiles/Brewfile -f
@@ -35,12 +35,12 @@ show-bat-themes() {
 function frg {
   result=$(rg --no-ignore --hidden --ignore-case --color=always --line-number --no-heading "$@" 2>/dev/null |
     fzf --ansi \
-        --color 'hl:-1:underline,hl+:-1:underline:reverse' \
-        --delimiter ':' \
-        --preview "bat --color=always {1} --theme='Solarized (light)' --highlight-line {2}" \
-        --preview-window 'up,60%,border-bottom,+{2}+3/3,~3')
-    file=${result%%:*}
-    linenumber=$(echo "${result}" | cut -d: -f2)
+      --color 'hl:-1:underline,hl+:-1:underline:reverse' \
+      --delimiter ':' \
+      --preview "bat --color=always {1} --theme='Solarized (light)' --highlight-line {2}" \
+      --preview-window 'up,60%,border-bottom,+{2}+3/3,~3')
+  file=${result%%:*}
+  linenumber=$(echo "${result}" | cut -d: -f2)
   if [[ -n "$file" ]]; then
     $EDITOR +"${linenumber}" "$file"
   fi
@@ -55,44 +55,47 @@ function cheatmd() {
 }
 
 function relpath() {
-    source=$1
-    target=$2
+  source=$1
+  target=$2
 
-    common_part=$source
-    back=
-    while [ "${target#$common_part}" = "${target}" ]; do
-        common_part=$(dirname $common_part)
-        back="../${back}"
-    done
+  common_part=$source
+  back=
+  while [ "${target#$common_part}" = "${target}" ]; do
+    common_part=$(dirname $common_part)
+    back="../${back}"
+  done
 
-    echo ${back}${target#$common_part/}
+  echo ${back}${target#$common_part/}
 }
 
 function gd() {
-  commit=${1:-head}
-  git diff "$commit" -- ':!package-lock.json' ':!yarn.lock'
+  local commit=${1:-HEAD}
+  git diff "$commit" -- \
+    ':(top,exclude)*package-lock.json' \
+    ':(top,exclude)*yarn.lock' \
+    ':(top,exclude)*pnpm-lock.yaml'
 }
 
 psql() {
-    if [[ -f ".env" ]]; then
-        local conn_string=$(sed -n 's/^PG_CONNECTION_STRING=//p' .env | sed 's/^"\(.*\)"$/\1/')
-        if [[ -n "$conn_string" ]]; then
-            echo "INFO: Using connection string from .env file in $(pwd)"
-            command psql "$conn_string"
-        else
-            command psql "$@"
-        fi
+  if [[ -f ".env" ]]; then
+    local conn_string=$(sed -n 's/^PG_CONNECTION_STRING=//p' .env | sed 's/^"\(.*\)"$/\1/')
+    if [[ -n "$conn_string" ]]; then
+      echo "INFO: Using connection string from .env file in $(pwd)"
+      command psql "$conn_string"
     else
-        command psql "$@"
+      command psql "$@"
     fi
+  else
+    command psql "$@"
+  fi
 }
 
 function re_pair() {
-  trackpad_id=`blueutil --paired | grep "Howie.*Trackpad" | grep -Eo '[a-z0-9]{2}(-[a-z0-9]{2}){5}'`
-  trackpad_name=`blueutil --paired | grep "Howie.*Trackpad" | grep -Eo 'name: ".*"'`
+  trackpad_id=$(blueutil --paired | grep "Howie.*Trackpad" | grep -Eo '[a-z0-9]{2}(-[a-z0-9]{2}){5}')
+  trackpad_name=$(blueutil --paired | grep "Howie.*Trackpad" | grep -Eo 'name: ".*"')
 
-  keyboard_id=`blueutil --paired | grep "Howie.*Keyboard" | grep -Eo '[a-z0-9]{2}(-[a-z0-9]{2}){5}'`
-  keyboard_name=`blueutil --paired | grep "Howie.*Keyboard" | grep -Eo 'name: ".*"'`
+  keyboard_id=$(blueutil --paired | grep "Howie.*Keyboard" | grep -Eo '[a-z0-9]{2}(-[a-z0-9]{2}){5}')
+  keyboard_name=$(blueutil --paired | grep "Howie.*Keyboard" | grep -Eo 'name: ".*"')
 
   echo "unpairing trackpad BT device $trackpad_id, $trackpad_name"
   blueutil --unpair "$trackpad_id"
@@ -121,7 +124,10 @@ function gwt() {
     echo "Usage: gwt <branch-name>"
     return 1
   fi
-  git rev-parse --is-inside-work-tree >/dev/null 2>&1 || { echo "Not a git repository"; return 1; }
+  git rev-parse --is-inside-work-tree >/dev/null 2>&1 || {
+    echo "Not a git repository"
+    return 1
+  }
   # Use the main worktree so calling gwt from inside a linked worktree still
   # resolves paths against the original repo.
   local repo_root
@@ -141,6 +147,12 @@ function gwt() {
     mkdir -p "$worktree_path/.claude"
     ln -sf "$repo_root/.claude/settings.local.json" "$worktree_path/.claude/settings.local.json"
   fi
+
+  # Copy .tmux-window.sh (gitignored, so it isn't checked out) so tmuxwt/cleanwt
+  # can be run from inside this worktree to spawn/tear down further worktrees.
+  if [[ -f "$repo_root/.tmux-window.sh" && ! -e "$worktree_path/.tmux-window.sh" ]]; then
+    cp "$repo_root/.tmux-window.sh" "$worktree_path/.tmux-window.sh"
+  fi
 }
 
 function cleanwt() {
@@ -148,9 +160,15 @@ function cleanwt() {
   [[ "$1" == "-v" ]] && debug=true
 
   local worktree_path
-  worktree_path=$(git rev-parse --show-toplevel 2>/dev/null) || { echo "Not a git repository"; return 1; }
+  worktree_path=$(git rev-parse --show-toplevel 2>/dev/null) || {
+    echo "Not a git repository"
+    return 1
+  }
   local branch
-  branch=$(git rev-parse --abbrev-ref HEAD 2>/dev/null) || { echo "Could not determine branch"; return 1; }
+  branch=$(git rev-parse --abbrev-ref HEAD 2>/dev/null) || {
+    echo "Could not determine branch"
+    return 1
+  }
   if [[ "$worktree_path" != "$HOME/.worktrees/"* ]]; then
     echo "Not in a worktree managed by gwt"
     return 1
@@ -187,7 +205,7 @@ function cleanwt() {
         (.[0].permissions.allow // []) as $main |
         (.[1].permissions.allow // []) as $wt |
         .[0] * { permissions: { allow: ($main + ($wt - $main)) } }
-      ' "$main_settings" "$wt_settings") && echo "$merged" > "$main_settings"
+      ' "$main_settings" "$wt_settings") && echo "$merged" >"$main_settings"
     else
       mkdir -p "$main_worktree/.claude"
       cp "$wt_settings" "$main_settings"
@@ -213,9 +231,15 @@ function cleanwt() {
 
 function gwt-clean() {
   local worktree_path
-  worktree_path=$(git rev-parse --show-toplevel 2>/dev/null) || { echo "Not a git repository"; return 1; }
+  worktree_path=$(git rev-parse --show-toplevel 2>/dev/null) || {
+    echo "Not a git repository"
+    return 1
+  }
   local branch
-  branch=$(git rev-parse --abbrev-ref HEAD 2>/dev/null) || { echo "Could not determine branch"; return 1; }
+  branch=$(git rev-parse --abbrev-ref HEAD 2>/dev/null) || {
+    echo "Could not determine branch"
+    return 1
+  }
   if [[ "$worktree_path" != "$HOME/.worktrees/"* ]]; then
     echo "Not in a worktree managed by gwt"
     return 1
@@ -233,7 +257,7 @@ function gwt-clean() {
         (.[0].permissions.allow // []) as $main |
         (.[1].permissions.allow // []) as $wt |
         .[0] * { permissions: { allow: ($main + ($wt - $main)) } }
-      ' "$main_settings" "$wt_settings") && echo "$merged" > "$main_settings"
+      ' "$main_settings" "$wt_settings") && echo "$merged" >"$main_settings"
     else
       mkdir -p "$main_worktree/.claude"
       cp "$wt_settings" "$main_settings"
@@ -280,7 +304,6 @@ function gh() {
   return $rc
 }
 
-
 function tmuxwt() {
   local branch="$1"
   if [[ -z "$branch" ]]; then
@@ -288,7 +311,10 @@ function tmuxwt() {
     return 1
   fi
 
-  git rev-parse --is-inside-work-tree >/dev/null 2>&1 || { echo "Not a git repository"; return 1; }
+  git rev-parse --is-inside-work-tree >/dev/null 2>&1 || {
+    echo "Not a git repository"
+    return 1
+  }
   # Resolve the main worktree so tmuxwt works correctly when called from inside
   # an existing linked worktree.
   local repo_root

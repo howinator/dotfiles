@@ -14,3 +14,27 @@
 .shell/secrets.bash
 .gitconfig.local
 .config/cheat/cheatsheets/
+
+# Claude Code runtime state (~/.claude is stowed to this dir)
+.claude/backups/
+.claude/cache/
+.claude/downloads/
+.claude/file-history/
+.claude/history.jsonl
+.claude/mcp-needs-auth-cache.json
+.claude/plugins/
+.claude/policy-limits.json
+.claude/projects/
+.claude/remote-settings.json
+.claude/session-env/
+.claude/sessions/
+.claude/shell-snapshots/
+
+# thefuck generated config
+.config/thefuck/
+
+# Runtime/installed binaries and data under ~/.local
+.local/bin/claude
+.local/bin/env
+.local/share/
+.local/state/

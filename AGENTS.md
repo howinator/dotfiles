@@ -85,3 +85,7 @@ When a worktree's `.claude/settings.local.json` is a real file (not the original
 - After adding a brew package, run `brew bundle dump --file=~/dotfiles/Brewfile -f` to update the Brewfile
 - Tmux hooks go in `.config/tmux/hooks/`, scripts in `.config/tmux/scripts/`
 - GPG signing is enabled for commits — the signing key is in `.gitconfig.local` (gitignored)
+
+## Cheatsheets
+
+When the user asks how to do something in neovim, update `nvim-cheatsheet.md` at the repo root with the answer (keymap, command, or workflow). `cheat/cheatsheets/personal/nvim` is a symlink to that file, so `cheat nvim` will pick up the change automatically.

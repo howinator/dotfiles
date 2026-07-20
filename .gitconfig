@@ -1,6 +1,3 @@
-[user]
-	email = howie@sola-solutions.com
-	name = Howie Benefiel
 [commit]
 	gpgsign = true
 [tag]

@@ -29,6 +29,8 @@ zinit light zsh-users/zsh-syntax-highlighting
 zinit light zsh-users/zsh-autosuggestions
 
 ## OMZ Plugins
+# use my shell function for gd instead
+zinit ice wait lucid atload'unalias gd 2>/dev/null'
 zinit snippet OMZP::git
 
 ## Custom-ish plugins

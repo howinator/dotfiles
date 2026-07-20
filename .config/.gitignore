@@ -1,0 +1,11 @@
+op/
+nvm/
+k9s/
+homebrew/
+helm/
+graphite/
+gh/
+caddy/
+auth0/
+temporalio/
+swiftpm/

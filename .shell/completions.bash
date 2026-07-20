@@ -17,8 +17,11 @@ zinit snippet https://github.com/docker/cli/blob/master/contrib/completion/zsh/_
 zinit ice as"completion" depth=1 pick"scripts/cheat.zsh"
 zinit light cheat/cheat
 
+
 # Initialize completion system
 autoload -U compinit && compinit
+# This is needed to get the `complete` command (needed for aws completions)
+autoload bashcompinit && bashcompinit
 ## Make zinit go fast?
 zinit cdreplay -q
 
@@ -41,3 +44,8 @@ if [ -f '/Users/howie/Downloads/google-cloud-sdk/completion.zsh.inc' ]; then . '
 if command -v gt &>/dev/null; then
   eval "$(gt completion)"
 fi
+
+fpath=($fpath ~/.zsh/completion)
+
+complete -C '/usr/local/bin/aws_completer' aws
+

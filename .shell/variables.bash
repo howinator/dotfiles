@@ -22,6 +22,9 @@ export PATH="$PATH:$HOME/.cargo/bin"
 export PATH="/opt/homebrew/opt/postgresql@16/bin:$PATH"
 export PATH=$PATH:$(go env GOPATH)/bin
 export PATH="$HOME/dotfiles/scripts:$PATH"
+export PATH="/Users/howie/Library/pnpm/bin:$PATH"
+export PATH="/Users/howie/.sd/bin:$PATH"
 # opencode
 export PATH=/Users/howie/.opencode/bin:$PATH
 export PATH="$PATH:$HOME/bin"
+export PATH="/Users/howie/.duckdb/cli/latest:$PATH"
