@@ -15,7 +15,6 @@ alias grb='git rebase -S'
 alias gchm='git checkout-pull origin main'
 alias glom='git pull origin main'
 alias k=kubectl
-alias cddet='cd ~/projects/detail'
 alias nv="nvim"
 
 # eza commands

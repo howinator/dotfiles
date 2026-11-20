@@ -28,7 +28,7 @@ brew-install() {
 }
 
 show-bat-themes() {
-  local file=${1:-~/projects/detail/packages/replay/src/cli.ts}
+  local file=${1:-$HOME/dotfiles/.config/rex/init.lua}
   bat --list-themes | fzf --preview="bat --theme={} --color=always ${file}"
 }
 
