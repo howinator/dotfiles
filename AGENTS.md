@@ -10,7 +10,7 @@ Personal dotfiles managed with GNU Stow. Run `stow .` from the repo root to link
 - `.config/kitty/` — Kitty terminal config (Catppuccin Mocha theme)
 - `.config/rex/` — Rex config (`init.lua`): tmux-style keys on a `Ctrl+Space` prefix, vim-aware `Ctrl+h/j/k/l`, and an "Apply Dotfiles Settings" palette action for the Ghostty-like look. Run `rex config reload` after edits.
 - `.claude/` — Claude Code base layers (`settings.base.json`, `mcp.base.json`) and notification hooks. `~/.claude/settings.json` and the MCP list in `~/.claude.json` are built, not stowed (see below).
-- `scripts/` — Standalone scripts, on PATH as `~/dotfiles/scripts` (`cleanwt`, `clean-worktrees`, `claude-config-build`, `claude-statusline.sh`)
+- `scripts/` — Standalone scripts, on PATH as `~/dotfiles/scripts` (`cleanwt`, `clean-worktrees`, `claude-config-build`, `claude-statusline.sh`, `stow-unfold`)
 - `Brewfile` — Homebrew packages, casks, and fonts
 
 Secrets live in `~/.shell/secrets.bash` (gitignored, never committed).
