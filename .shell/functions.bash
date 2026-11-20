@@ -156,77 +156,12 @@ function gwt() {
 }
 
 function cleanwt() {
-  local debug=false
-  [[ "$1" == "-v" ]] && debug=true
-
-  local worktree_path
-  worktree_path=$(git rev-parse --show-toplevel 2>/dev/null) || {
-    echo "Not a git repository"
-    return 1
-  }
-  local branch
-  branch=$(git rev-parse --abbrev-ref HEAD 2>/dev/null) || {
-    echo "Could not determine branch"
-    return 1
-  }
-  if [[ "$worktree_path" != "$HOME/.worktrees/"* ]]; then
-    echo "Not in a worktree managed by gwt"
-    return 1
-  fi
+  # Thin wrapper around scripts/cleanwt (on PATH via ~/dotfiles/scripts) so the
+  # shell ends up in the main worktree after the current one is destroyed.
   local main_worktree
-  main_worktree=$(git worktree list --porcelain | head -1 | sed 's/worktree //')
-  $debug && echo "[cleanwt] worktree=$worktree_path branch=$branch main=$main_worktree"
-
-  # Run ondestroy from .tmux-window.sh first, before any cleanup
-  local tmux_script=""
-  if [[ -f "$worktree_path/.tmux-window.sh" ]]; then
-    tmux_script="$worktree_path/.tmux-window.sh"
-  elif [[ -f "$main_worktree/.tmux-window.sh" ]]; then
-    tmux_script="$main_worktree/.tmux-window.sh"
-  fi
-  if [[ -n "$tmux_script" ]]; then
-    if grep -qE '^(function )?ondestroy[[:space:]]*\(' "$tmux_script"; then
-      $debug && echo "[cleanwt] running ondestroy from $tmux_script"
-      bash "$tmux_script" ondestroy "$worktree_path"
-    else
-      $debug && echo "[cleanwt] no ondestroy function in $tmux_script"
-    fi
-  else
-    $debug && echo "[cleanwt] no .tmux-window.sh found"
-  fi
-
-  # Merge worktree permissions into main repo's settings.local.json
-  local wt_settings="$worktree_path/.claude/settings.local.json"
-  local main_settings="$main_worktree/.claude/settings.local.json"
-  if [[ -f "$wt_settings" && ! -L "$wt_settings" ]]; then
-    if [[ -f "$main_settings" ]]; then
-      local merged
-      merged=$(jq -s '
-        (.[0].permissions.allow // []) as $main |
-        (.[1].permissions.allow // []) as $wt |
-        .[0] * { permissions: { allow: ($main + ($wt - $main)) } }
-      ' "$main_settings" "$wt_settings") && echo "$merged" >"$main_settings"
-    else
-      mkdir -p "$main_worktree/.claude"
-      cp "$wt_settings" "$main_settings"
-    fi
-    echo "Merged worktree permissions into $main_settings"
-  fi
-
-  cd "$main_worktree"
-  # Remove worktree — use force twice to handle untracked files
-  if ! git worktree remove --force --force "$worktree_path" 2>/dev/null; then
-    echo "Warning: git worktree remove failed, removing directory manually"
-    rm -rf "$worktree_path"
-    git worktree prune
-  fi
-  if ! git branch -d "$branch" 2>/dev/null; then
-    if git ls-remote --heads origin "$branch" | grep -q "$branch"; then
-      echo "Branch '$branch' still exists on remote and is not merged. Use 'git branch -D $branch' to force delete."
-    else
-      git branch -D "$branch"
-    fi
-  fi
+  main_worktree=$(git worktree list --porcelain 2>/dev/null | head -1 | sed 's/^worktree //')
+  command cleanwt "$@" || return $?
+  [[ -n "$main_worktree" ]] && cd "$main_worktree"
 }
 
 function gwt-clean() {
@@ -356,6 +291,35 @@ function tmuxwt() {
   fi
 }
 
+# Fetch a remote branch and point a local branch of the same name at it, so
+# `tmuxwt <branch>` can check it out for review. Only moves refs; the current
+# checkout and working tree are not touched.
+function fetch_for_review() {
+  local branch="$1"
+  if [[ -z "$branch" ]]; then
+    echo "Usage: fetch_for_review <remote-branch-name>"
+    return 1
+  fi
+  git rev-parse --is-inside-work-tree >/dev/null 2>&1 || {
+    echo "Not a git repository"
+    return 1
+  }
+
+  git fetch origin "$branch" || return 1
+
+  # git refuses to move a branch that is checked out in some worktree.
+  local existing
+  existing=$(git worktree list --porcelain | awk -v ref="branch refs/heads/$branch" \
+    '/^worktree / { wt = substr($0, 10) } $0 == ref { print wt }')
+  if [[ -n "$existing" ]]; then
+    echo "$branch is checked out at $existing; run 'git pull' there instead"
+    return 1
+  fi
+
+  git branch -f --track "$branch" "origin/$branch" || return 1
+  echo "Ready: tmuxwt $branch"
+}
+
 # this is for claude code
 function cd() {
   if declare -f __zoxide_z &>/dev/null; then
@@ -363,4 +327,16 @@ function cd() {
   else
     builtin cd "$@"
   fi
+}
+
+codex() {
+  local codex_tmux="${TMUX-}" codex_pane="${TMUX_PANE-}"
+  codex_tmux="${codex_tmux//\\/\\\\}"
+  codex_tmux="${codex_tmux//\"/\\\"}"
+  codex_pane="${codex_pane//\\/\\\\}"
+  codex_pane="${codex_pane//\"/\\\"}"
+  command codex \
+    -c "shell_environment_policy.set.TMUX=\"$codex_tmux\"" \
+    -c "shell_environment_policy.set.TMUX_PANE=\"$codex_pane\"" \
+    "$@"
 }

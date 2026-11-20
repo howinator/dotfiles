@@ -1,0 +1,144 @@
+#!/usr/bin/env bash
+#
+# cleanwt - destroy one gwt-managed worktree.
+#
+# Steps, in order:
+#   1. run the ondestroy hook from .tmux-window.sh (worktree copy, else main repo)
+#   2. merge the worktree's .claude/settings.local.json permissions back into
+#      the main repo's settings.local.json (only when it is a real file)
+#   3. git worktree remove --force --force (falls back to rm -rf + prune)
+#   4. delete the local branch: -d when merged, -D when it is not on origin,
+#      otherwise keep it and print a warning
+#
+# Steps 2 and 4 write shared state in the main repo, so they run under a
+# per-repo lock. Several cleanwt processes can therefore run at the same time.
+#
+# Usage: cleanwt [-v] [WORKTREE_PATH]
+#   WORKTREE_PATH defaults to the top level of the current directory.
+#   The path must be inside $WORKTREES_DIR (default ~/.worktrees).
+#
+# The cleanwt shell function in .shell/functions.bash wraps this script and
+# changes to the main worktree afterwards.
+
+set -euo pipefail
+
+debug=false
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    -v) debug=true ;;
+    -h|--help) sed -n '2,/^$/p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
+    -*) echo "unknown option: $1" >&2; exit 2 ;;
+    *) break ;;
+  esac
+  shift
+done
+
+WORKTREES_DIR="${WORKTREES_DIR:-$HOME/.worktrees}"
+WORKTREES_DIR=${WORKTREES_DIR%/}
+
+log() { if $debug; then echo "[cleanwt] $*"; fi; }
+
+target=${1:-.}
+worktree_path=$(git -C "$target" rev-parse --show-toplevel 2>/dev/null) || {
+  echo "Not a git repository: $target" >&2
+  exit 1
+}
+branch=$(git -C "$worktree_path" rev-parse --abbrev-ref HEAD 2>/dev/null) || {
+  echo "Could not determine branch" >&2
+  exit 1
+}
+if [[ "$worktree_path" != "$WORKTREES_DIR/"* ]]; then
+  echo "Not in a worktree managed by gwt: $worktree_path" >&2
+  exit 1
+fi
+# awk reads all of the input. `head -1` closes the pipe early, git then dies of
+# SIGPIPE (141), and pipefail + set -e silently ends the script when the repo
+# has many worktrees.
+main_worktree=$(git -C "$worktree_path" worktree list --porcelain | awk 'NR == 1 { sub(/^worktree /, ""); print }')
+if [[ "$worktree_path" == "$main_worktree" ]]; then
+  echo "Refusing to remove the main worktree: $worktree_path" >&2
+  exit 1
+fi
+common=$(git -C "$worktree_path" rev-parse --path-format=absolute --git-common-dir)
+log "worktree=$worktree_path branch=$branch main=$main_worktree"
+
+# ---- per-repo lock -------------------------------------------------------
+lock="$common/cleanwt.lock"
+acquire_lock() {
+  local waited=0
+  until mkdir "$lock" 2>/dev/null; do
+    sleep 0.2
+    (( waited++ )) || true
+    if (( waited > 1500 )); then
+      echo "timed out waiting for $lock" >&2
+      return 1
+    fi
+  done
+  trap 'rmdir "$lock" 2>/dev/null' EXIT
+}
+release_lock() {
+  rmdir "$lock" 2>/dev/null || true
+  trap - EXIT
+}
+
+# ---- 1. ondestroy hook ---------------------------------------------------
+tmux_script=""
+if [[ -f "$worktree_path/.tmux-window.sh" ]]; then
+  tmux_script="$worktree_path/.tmux-window.sh"
+elif [[ -f "$main_worktree/.tmux-window.sh" ]]; then
+  tmux_script="$main_worktree/.tmux-window.sh"
+fi
+if [[ -n "$tmux_script" ]]; then
+  if grep -qE '^(function )?ondestroy[[:space:]]*\(' "$tmux_script"; then
+    log "running ondestroy from $tmux_script"
+    bash "$tmux_script" ondestroy "$worktree_path"
+  else
+    log "no ondestroy function in $tmux_script"
+  fi
+else
+  log "no .tmux-window.sh found"
+fi
+
+# ---- 2. merge Claude permissions (locked) --------------------------------
+wt_settings="$worktree_path/.claude/settings.local.json"
+main_settings="$main_worktree/.claude/settings.local.json"
+if [[ -f "$wt_settings" && ! -L "$wt_settings" ]]; then
+  acquire_lock
+  if [[ -f "$main_settings" ]]; then
+    merged=$(jq -s '
+      (.[0].permissions.allow // []) as $main |
+      (.[1].permissions.allow // []) as $wt |
+      .[0] * { permissions: { allow: ($main + ($wt - $main)) } }
+    ' "$main_settings" "$wt_settings") && echo "$merged" >"$main_settings"
+  else
+    mkdir -p "$main_worktree/.claude"
+    cp "$wt_settings" "$main_settings"
+  fi
+  release_lock
+  echo "Merged worktree permissions into $main_settings"
+fi
+
+# ---- 3. remove the worktree ----------------------------------------------
+# Force twice so untracked files and a locked worktree do not stop us.
+if ! git -C "$main_worktree" worktree remove --force --force "$worktree_path" 2>/dev/null; then
+  echo "Warning: git worktree remove failed, removing directory manually"
+  rm -rf "$worktree_path"
+  acquire_lock
+  git -C "$main_worktree" worktree prune
+  release_lock
+fi
+
+# ---- 4. delete the branch (locked) ---------------------------------------
+if [[ "$branch" == "HEAD" ]]; then
+  log "detached HEAD, no branch to delete"
+  exit 0
+fi
+acquire_lock
+if git -C "$main_worktree" branch -d "$branch" 2>/dev/null; then
+  log "deleted branch $branch"
+elif git -C "$main_worktree" ls-remote --exit-code --heads origin "$branch" >/dev/null 2>&1; then
+  echo "Branch '$branch' still exists on remote and is not merged. Use 'git branch -D $branch' to force delete."
+else
+  git -C "$main_worktree" branch -D "$branch"
+fi
+release_lock

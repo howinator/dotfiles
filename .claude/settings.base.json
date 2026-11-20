@@ -10,7 +10,7 @@
   "permissions": {
     "defaultMode": "auto"
   },
-  "model": "opus[1m]",
+  "model": "opus",
   "hooks": {
     "Notification": [
       {
@@ -39,6 +39,15 @@
             "timeout": 5
           }
         ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "$HOME/go/bin/tmux-server hook",
+            "timeout": 5
+          }
+        ]
       }
     ],
     "SessionEnd": [
@@ -46,7 +55,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "claug stop",
+            "command": "$HOME/go/bin/tmux-server hook",
             "timeout": 5
           }
         ]
@@ -57,15 +66,51 @@
         "hooks": [
           {
             "type": "command",
-            "command": "claug start",
+            "command": "$HOME/go/bin/tmux-server hook",
+            "timeout": 5
+          }
+        ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/bin/sh -c 'rex __internal session-start --agent claude 2>/dev/null || true'",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "$HOME/go/bin/tmux-server hook",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "$HOME/go/bin/tmux-server hook",
             "timeout": 5
           }
         ]
       }
     ]
   },
+  "statusLine": {
+    "type": "command",
+    "command": "/Users/howie/dotfiles/scripts/claude-statusline.sh",
+    "refreshInterval": 5
+  },
   "enabledPlugins": {
-    "datadog@claude-plugins-official": true
+    "frontend-design@claude-plugins-official": true
   },
   "extraKnownMarketplaces": {
     "claude-plugins-official": {
@@ -79,6 +124,7 @@
   "effortLevel": "high",
   "tui": "fullscreen",
   "skipDangerousModePermissionPrompt": true,
+  "skipWorkflowUsageWarning": true,
   "theme": "dark",
   "skipAutoPermissionPrompt": true,
   "gitAttribution": false

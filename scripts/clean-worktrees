@@ -1,0 +1,322 @@
+#!/usr/bin/env bash
+#
+# clean-worktrees - remove stale entries from the worktrees directory.
+#
+# The directory is walked recursively. A directory that contains .git is an
+# entry and is never descended into (submodules inside it are left alone).
+# A directory without .git that has entries somewhere below it is a
+# container; it is descended into and removed when it becomes empty.
+# A directory without any .git below it is a plain leftover.
+#
+# An entry is stale when its most recent activity is older than MAX_AGE_DAYS.
+# Activity is the newest of:
+#   - the directory mtime
+#   - the last commit on HEAD (valid worktrees only)
+#   - the git index / HEAD file mtime (valid worktrees only)
+#   - the newest file in the tree (plain leftovers only)
+#
+# Entry kinds:
+#   worktree   .git is a file and the parent gitdir exists  -> cleanwt
+#   broken     .git is a file but the parent gitdir is gone -> rm -rf
+#   plain      no .git anywhere below (leftover dir)        -> rm -rf
+#   container  no .git, but entries below; removed if empty -> rm -rf
+#   repo       .git is a directory (a full clone)           -> always skipped
+#
+# Valid worktrees are removed with the cleanwt script next to this one, so
+# the ondestroy hook runs, Claude permissions are merged back into the main
+# repo, and the local branch is deleted when it is safe.
+#
+# Phases: scan (parallel, read only), plan (serial, sorted), act (parallel).
+# Git is run with --no-optional-locks while scanning so that this script
+# never refreshes the index and therefore never changes the age it measures.
+#
+# A valid worktree is skipped when it has uncommitted changes or commits
+# that are not on any remote, unless --force is given.
+#
+# Usage: clean-worktrees [options]
+#   -n, --dry-run     Show what would be removed. Do not remove anything.
+#   -f, --force       Remove worktrees that are dirty or have unpushed commits.
+#   -d, --days N      Age limit in days (default: 90).
+#   -D, --dir PATH    Worktrees directory (default: $WORKTREES_DIR or ~/.worktrees).
+#   -j, --jobs N      Parallel jobs for scanning and removing (default: 8).
+#   -v, --verbose     Also list entries that are kept.
+#   -h, --help        Show this help.
+
+set -euo pipefail
+
+WORKTREES_DIR="${WORKTREES_DIR:-$HOME/.worktrees}"
+MAX_AGE_DAYS=90
+DRY_RUN=0
+FORCE=0
+VERBOSE=0
+JOBS=8
+
+usage() {
+  sed -n '2,/^$/p' "$0" | sed 's/^# \{0,1\}//'
+}
+
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    -n|--dry-run) DRY_RUN=1 ;;
+    -f|--force) FORCE=1 ;;
+    -d|--days) MAX_AGE_DAYS="${2:?--days needs a value}"; shift ;;
+    -D|--dir) WORKTREES_DIR="${2:?--dir needs a value}"; shift ;;
+    -j|--jobs) JOBS="${2:?--jobs needs a value}"; shift ;;
+    -v|--verbose) VERBOSE=1 ;;
+    -h|--help) usage; exit 0 ;;
+    *) echo "unknown option: $1" >&2; usage >&2; exit 2 ;;
+  esac
+  shift
+done
+
+if [[ ! -d "$WORKTREES_DIR" ]]; then
+  echo "not a directory: $WORKTREES_DIR" >&2
+  exit 1
+fi
+WORKTREES_DIR=${WORKTREES_DIR%/}
+export WORKTREES_DIR            # cleanwt checks paths against it
+
+script_dir=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
+CLEANWT="$script_dir/cleanwt"
+[[ -x "$CLEANWT" ]] || CLEANWT=$(command -v cleanwt || true)
+export CLEANWT
+
+now=$(date +%s)
+cutoff=$(( now - MAX_AGE_DAYS * 86400 ))
+export cutoff FORCE
+export LC_ALL=C
+
+tmp=$(mktemp -d)
+trap 'rm -rf "$tmp"' EXIT
+export tmp
+
+# ---- helpers ---------------------------------------------------------------
+
+# mtime FILE -> epoch seconds (0 when missing). Works on macOS and GNU.
+mtime() {
+  stat -f %m "$1" 2>/dev/null || stat -c %Y "$1" 2>/dev/null || echo 0
+}
+
+# newest_mtime DIR -> newest epoch seconds of anything in the tree.
+newest_mtime() {
+  local n
+  n=$(find "$1" -print0 2>/dev/null \
+      | { xargs -0 stat -f %m 2>/dev/null || xargs -0 stat -c %Y 2>/dev/null; } \
+      | sort -n | tail -1)
+  echo "${n:-0}"
+}
+
+# fmt_date EPOCH -> YYYY-MM-DD. Works on macOS and GNU.
+fmt_date() {
+  date -r "$1" +%Y-%m-%d 2>/dev/null || date -d "@$1" +%Y-%m-%d
+}
+
+max() {
+  local m=0 v
+  for v in "$@"; do (( v > m )) && m=$v; done
+  echo "$m"
+}
+
+# has_git_below DIR -> true when any .git exists somewhere under DIR.
+has_git_below() {
+  [[ -n $(find "$1" -mindepth 2 -name .git -print -quit 2>/dev/null) ]]
+}
+
+# is_empty DIR -> true when DIR holds nothing but .DS_Store.
+is_empty() {
+  [[ -z $(find "$1" -mindepth 1 -maxdepth 1 ! -name .DS_Store -print -quit 2>/dev/null) ]]
+}
+
+# has_stray_files DIR -> true when DIR directly holds a file other than .DS_Store.
+has_stray_files() {
+  [[ -n $(find "$1" -mindepth 1 -maxdepth 1 ! -type d ! -name .DS_Store -print -quit 2>/dev/null) ]]
+}
+
+report() {
+  # report ACTION KIND EPOCH NAME [REASON]
+  local action=$1 kind=$2 epoch=$3 name=$4 reason=${5:-}
+  printf '%-7s %-9s %s  %s%s\n' "$action" "$kind" "$(fmt_date "$epoch")" "$name" \
+    "${reason:+  ($reason)}"
+}
+
+# ---- phase 1: walk (serial, cheap) ----------------------------------------
+# entries:    NUL separated "DIR<TAB>REL"
+# containers: one REL per line, children before parents
+
+entries="$tmp/entries"
+containers="$tmp/containers"
+: >"$entries"
+: >"$containers"
+
+walk() {
+  local dir=$1 rel=$2 child
+  if [[ -e "$dir/.git" ]] || ! has_git_below "$dir"; then
+    printf '%s\t%s\0' "$dir" "$rel" >>"$entries"
+    return 0
+  fi
+  for child in "$dir"/*/; do
+    child=${child%/}
+    [[ -d "$child" ]] || continue
+    walk "$child" "${rel:+$rel/}$(basename "$child")"
+  done
+  if [[ -n "$rel" ]]; then
+    printf '%s\n' "$rel" >>"$containers"
+  fi
+}
+walk "$WORKTREES_DIR" ""
+
+# ---- phase 2: evaluate entries (parallel, read only) ----------------------
+# one record per entry, fields separated by \x1f (not whitespace, so read
+# keeps empty fields): REL KIND LAST SKIP_REASON DIR COMMON
+
+evaluate() {
+  local dir=${1%%$'\t'*} rel=${1#*$'\t'}
+  local kind gitdir="" common="" last commit reason=""
+
+  if [[ -d "$dir/.git" ]]; then
+    kind=repo
+  elif [[ -f "$dir/.git" ]]; then
+    gitdir=$(sed -n 's/^gitdir: //p' "$dir/.git")
+    if [[ -n "$gitdir" && -d "$gitdir" ]] \
+       && common=$(git -C "$dir" rev-parse --path-format=absolute --git-common-dir 2>/dev/null); then
+      kind=worktree
+    else
+      kind=broken
+    fi
+  else
+    kind=plain
+  fi
+
+  case "$kind" in
+    worktree)
+      commit=$(git -C "$dir" log -1 --format=%ct 2>/dev/null || echo 0)
+      last=$(max "$(mtime "$dir")" "$commit" "$(mtime "$gitdir/index")" "$(mtime "$gitdir/HEAD")")
+      ;;
+    broken) last=$(max "$(mtime "$dir")" "$(mtime "$dir/.git")") ;;
+    plain)  last=$(newest_mtime "$dir") ;;
+    repo)   last=$(mtime "$dir") ;;
+  esac
+
+  # only stale worktrees need the (slower) safety checks
+  if [[ $kind == worktree ]] && (( last < cutoff )) && (( ! FORCE )); then
+    if [[ -n $(git --no-optional-locks -C "$dir" status --porcelain 2>/dev/null) ]]; then
+      reason="uncommitted changes"
+    elif [[ -z $(git -C "$dir" branch -r --contains HEAD 2>/dev/null) ]]; then
+      reason="commits not on any remote"
+    fi
+  fi
+
+  local us=$'\x1f'
+  printf '%s\n' "$rel$us$kind$us$last$us$reason$us$dir$us$common"
+}
+export -f evaluate mtime newest_mtime max
+
+records="$tmp/records"
+if [[ -s "$entries" ]]; then
+  xargs -0 -P "$JOBS" -n 1 "$BASH" -c 'evaluate "$1"' _ <"$entries" | sort >"$records"
+else
+  : >"$records"
+fi
+
+# ---- phase 3: plan (serial, sorted output) --------------------------------
+# plan: NUL separated KIND, DIR, REL triples
+
+plan="$tmp/plan"
+: >"$plan"
+removed=0
+skipped=0
+kept=0
+declare -a plan_rels=()
+declare -a all_rels=()
+declare -A commons=()
+
+while IFS=$'\x1f' read -r rel kind last reason dir common; do
+  all_rels+=("$rel")
+  if [[ $kind == repo ]]; then
+    report SKIP "$kind" "$last" "$rel" "full clone, remove by hand"
+    (( skipped++ )) || true
+    continue
+  fi
+  if (( last >= cutoff )); then
+    (( VERBOSE )) && report KEEP "$kind" "$last" "$rel"
+    (( kept++ )) || true
+    continue
+  fi
+  if [[ -n "$reason" ]]; then
+    report SKIP "$kind" "$last" "$rel" "$reason, use --force"
+    (( skipped++ )) || true
+    continue
+  fi
+  report REMOVE "$kind" "$last" "$rel"
+  printf '%s\0%s\0%s\0' "$kind" "$dir" "$rel" >>"$plan"
+  plan_rels+=("$rel")
+  [[ $kind == worktree && -n "$common" ]] && commons["$common"]=1
+  (( removed++ )) || true
+done <"$records"
+
+# container_would_empty REL -> true when every entry below REL is planned
+# for removal and REL holds no stray files.
+container_would_empty() {
+  local c=$1 r n=0 p=0
+  for r in "${all_rels[@]}"; do [[ $r == "$c/"* ]] && (( n++ )) || true; done
+  for r in "${plan_rels[@]}"; do [[ $r == "$c/"* ]] && (( p++ )) || true; done
+  (( n > 0 && p == n )) && ! has_stray_files "$WORKTREES_DIR/$c"
+}
+
+if (( DRY_RUN )); then
+  while IFS= read -r c; do
+    if container_would_empty "$c"; then
+      report REMOVE container "$(mtime "$WORKTREES_DIR/$c")" "$c" "empty"
+      (( removed++ )) || true
+    fi
+  done <"$containers"
+  echo
+  echo "dry run: $removed to remove, $skipped skipped, $kept kept (older than $MAX_AGE_DAYS days in $WORKTREES_DIR, ${SECONDS}s)"
+  exit 0
+fi
+
+# ---- phase 4: act (parallel) -----------------------------------------------
+
+act() {
+  local kind=$1 dir=$2 rel=$3 out rc=0
+  case "$kind" in
+    worktree)     out=$("$CLEANWT" "$dir" 2>&1) || rc=$? ;;
+    broken|plain) out=$(rm -rf "$dir" 2>&1) || rc=$? ;;
+  esac
+  local block
+  if (( rc == 0 )); then
+    block="removed  $rel"
+  else
+    printf '%s\n' "$rel" >>"$tmp/failed"
+    block="FAILED   $rel (exit $rc)"
+  fi
+  [[ -n "$out" ]] && block+=$'\n'$(printf '%s\n' "$out" | sed 's/^/    /')
+  printf '%s\n' "$block"     # one write per entry so parallel output does not interleave
+}
+export -f act
+
+if [[ -s "$plan" ]]; then
+  echo
+  xargs -0 -P "$JOBS" -n 3 "$BASH" -c 'act "$1" "$2" "$3"' _ <"$plan"
+fi
+
+for common in "${!commons[@]}"; do
+  git --git-dir="$common" worktree prune 2>/dev/null || true
+done
+
+while IFS= read -r c; do
+  dir="$WORKTREES_DIR/$c"
+  if [[ -d "$dir" ]] && is_empty "$dir"; then
+    report REMOVE container "$(mtime "$dir")" "$c" "empty"
+    rm -rf "$dir"
+    (( removed++ )) || true
+  fi
+done <"$containers"
+
+failed=0
+[[ -f "$tmp/failed" ]] && failed=$(wc -l <"$tmp/failed" | tr -d ' ')
+(( removed -= failed )) || true
+
+echo
+echo "done: $removed removed, $failed failed, $skipped skipped, $kept kept (older than $MAX_AGE_DAYS days in $WORKTREES_DIR, ${SECONDS}s)"
+(( failed == 0 ))

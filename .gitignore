@@ -38,3 +38,28 @@
 .local/bin/env
 .local/share/
 .local/state/
+
+# Cloud / tool credentials and runtime state
+.config/gcloud/
+.config/metabase-cli/
+.config/pnpm/
+
+# Editor backup copies
+*.backup
+
+# Secrets and runtime state written by tools under ~/.config and ~/.local
+# (both are stowed as folded links into this repo)
+.config/1Password/
+.config/devbox-control/
+.config/tmux-server/
+# Work-specific (Datadog MCPs, monorepo rules). Move to dotfiles-work after ~/.config is unfolded.
+.config/opencode/
+.local/pipx/
+
+# Claude settings.json is built from layers by scripts/claude-settings-build
+.claude/settings.json
+.claude/.settings.last-build.json
+.claude/settings.work.json
+
+# Local copies made before risky edits
+*.before-*

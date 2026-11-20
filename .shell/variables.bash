@@ -23,8 +23,15 @@ export PATH="/opt/homebrew/opt/postgresql@16/bin:$PATH"
 export PATH=$PATH:$(go env GOPATH)/bin
 export PATH="$HOME/dotfiles/scripts:$PATH"
 export PATH="/Users/howie/Library/pnpm/bin:$PATH"
-export PATH="/Users/howie/.sd/bin:$PATH"
+export PATH="/Users/howie/.sli/bin:$PATH"
 # opencode
 export PATH=/Users/howie/.opencode/bin:$PATH
 export PATH="$PATH:$HOME/bin"
 export PATH="/Users/howie/.duckdb/cli/latest:$PATH"
+
+# The next line updates PATH for the Google Cloud SDK.
+if [ -f '/Users/howie/.local/bin/google-cloud-sdk/path.zsh.inc' ]; then . '/Users/howie/.local/bin/google-cloud-sdk/path.zsh.inc'; fi
+
+# The next line enables shell command completion for gcloud.
+if [ -f '/Users/howie/.local/bin/google-cloud-sdk/completion.zsh.inc' ]; then . '/Users/howie/.local/bin/google-cloud-sdk/completion.zsh.inc'; fi
+export OPENROUTER_URL=https://us.openrouter.ai/api/v1

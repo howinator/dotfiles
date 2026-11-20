@@ -135,11 +135,14 @@ export GPG_TTY=$(tty)
 . "$HOME/.local/bin/env"
 
 # pnpm
-export PNPM_HOME="$HOME/Library/pnpm"
+export PNPM_HOME="/Users/howie/Library/pnpm"
 case ":$PATH:" in
-  *":$PNPM_HOME:"*) ;;
-  *) export PATH="$PNPM_HOME:$PATH" ;;
+  *":$PNPM_HOME/bin:"*) ;;
+  *) export PATH="$PNPM_HOME/bin:$PATH" ;;
 esac
 # pnpm end
 [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
 
+
+# Machine-specific settings (e.g. work laptop), stowed from ~/dotfiles-work
+[[ -f ~/.shell-work.bash ]] && source ~/.shell-work.bash
