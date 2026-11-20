@@ -1,0 +1,118 @@
+#!/usr/bin/env bash
+# Build Claude Code's user config from layer files.
+#
+#   Layer (later wins)                 From
+#   ~/.claude/<name>.base.json         ~/dotfiles (public)
+#   ~/.claude/<name>.work.json         ~/dotfiles-work (private, work laptop)
+#   ~/.claude/<name>.machine.json      this machine only, in no repo
+#
+#   settings.*.json -> ~/.claude/settings.json (the whole file)
+#   mcp.*.json      -> the "mcpServers" key of ~/.claude.json
+#                      (the rest of ~/.claude.json is Claude Code state)
+#
+# Objects merge recursively. A later layer replaces a value; arrays are
+# replaced, not joined. A missing layer file is skipped.
+#
+# Claude Code also writes these targets (/config, /plugin, `claude mcp add`).
+# The script keeps a copy of what it last wrote. If a target changed since
+# then, it stops and shows the change, so the change is not lost. Move the
+# change into a layer file, then run again with --force.
+#
+# Usage: claude-config-build [--check | --force]
+#   --check  show what a new build would change; exit 1 if anything differs
+#   --force  write even if a target changed since the last build
+set -euo pipefail
+
+dir="$HOME/.claude"
+mode=write
+case "${1:-}" in
+  "") ;;
+  -n | --check) mode=check ;;
+  -f | --force) mode=force ;;
+  -h | --help)
+    sed -n '2,27p' "$0" | sed 's/^# \{0,1\}//'
+    exit 0
+    ;;
+  *)
+    echo "usage: claude-config-build [--check | --force]" >&2
+    exit 2
+    ;;
+esac
+
+# merge_layers NAME -> merged JSON of ~/.claude/NAME.{base,work,machine}.json
+merge_layers() {
+  local name=$1 layers=() f
+  for f in "$dir/$name".{base,work,machine}.json; do
+    [[ -f $f ]] && layers+=("$f")
+  done
+  if [[ ${#layers[@]} -eq 0 ]]; then
+    echo "error: no $dir/$name.*.json layers. Run 'stow .' in ~/dotfiles first." >&2
+    return 1
+  fi
+  jq -S -s 'reduce .[] as $layer ({}; . * $layer)' "${layers[@]}"
+  echo "$name: ${layers[*]##*/}" >&2
+}
+
+# current_value TARGET KEY -> sorted JSON now in TARGET (KEY "" = whole file)
+current_value() {
+  local target=$1 key=$2
+  [[ -f $target ]] || { echo null; return; }
+  if [[ -z $key ]]; then jq -S . "$target"; else jq -S --arg k "$key" '.[$k] // {}' "$target"; fi
+}
+
+status=0
+
+# apply NAME TARGET KEY: build layers NAME into TARGET (whole file, or KEY)
+apply() {
+  local name=$1 target=$2 key=$3
+  local last="$dir/.$name.last-build.json" new cur
+  new=$(merge_layers "$name")
+  # mcp.*.json use the .mcp.json shape: { "mcpServers": { ... } }
+  [[ -n $key ]] && new=$(jq -S --arg k "$key" '.[$k] // {}' <<<"$new")
+  cur=$(current_value "$target" "$key")
+
+  if [[ $cur == "$new" ]]; then
+    [[ $mode == check ]] || printf '%s\n' "$new" >"$last"
+    echo "  $target${key:+ (.$key)}: up to date"
+    return
+  fi
+
+  if [[ $mode == check ]]; then
+    diff -u --label "now: $target${key:+ .$key}" --label "new build" \
+      <(printf '%s\n' "$cur") <(printf '%s\n' "$new") || true
+    status=1
+    return
+  fi
+
+  # Stop if Claude Code (or a person) changed the target since the last build.
+  if [[ $mode != force && $cur != null && ! -L $target ]]; then
+    local base_line
+    if [[ -f $last ]]; then base_line=$(jq -S . "$last"); else base_line=$new; fi
+    if [[ $cur != "$base_line" ]]; then
+      echo "error: $target${key:+ (.$key)} has changes that are not in the layer files:" >&2
+      diff -u --label "last build" --label "now" \
+        <(printf '%s\n' "$base_line") <(printf '%s\n' "$cur") >&2 || true
+      echo "Move them into $dir/$name.{base,work,machine}.json, then run: claude-config-build --force" >&2
+      status=1
+      return
+    fi
+  fi
+
+  local tmp
+  tmp=$(mktemp "$target.XXXXXX")
+  if [[ -z $key ]]; then
+    printf '%s\n' "$new" >"$tmp"
+  else
+    # Keep the rest of the file (Claude Code state).
+    [[ -f $target ]] || echo '{}' >"$target"
+    jq --arg k "$key" --argjson v "$new" '.[$k] = $v' "$target" >"$tmp"
+  fi
+  chmod 600 "$tmp"
+  mv -f "$tmp" "$target" # also replaces an old symlink
+  printf '%s\n' "$new" >"$last"
+  echo "  wrote $target${key:+ (.$key)}"
+}
+
+apply settings "$dir/settings.json" ""
+apply mcp "$HOME/.claude.json" mcpServers
+exit $status

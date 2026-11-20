@@ -1,6 +1,6 @@
 # Dotfiles
 
-Personal dotfiles managed with GNU Stow. Run `stow .` from the repo root to symlink everything into `$HOME`.
+Personal dotfiles managed with GNU Stow. Run `stow .` from the repo root to link each tracked file into `$HOME` (`.stowrc` sets `--no-folding`).
 
 ## Repo layout
 
@@ -9,28 +9,30 @@ Personal dotfiles managed with GNU Stow. Run `stow .` from the repo root to syml
 - `.config/nvim/` — Neovim (LazyVim-based) with custom plugins
 - `.config/kitty/` — Kitty terminal config (Catppuccin Mocha theme)
 - `.config/rex/` — Rex config (`init.lua`): tmux-style keys on a `Ctrl+Space` prefix, vim-aware `Ctrl+h/j/k/l`, and an "Apply Dotfiles Settings" palette action for the Ghostty-like look. Run `rex config reload` after edits.
-- `.claude/` — Claude Code shared settings (`settings.base.json`) and notification hooks. `~/.claude/settings.json` is built, not stowed (see below).
-- `scripts/` — Standalone scripts, on PATH as `~/dotfiles/scripts` (`cleanwt`, `clean-worktrees`, `claude-settings-build`, `claude-statusline.sh`)
+- `.claude/` — Claude Code base layers (`settings.base.json`, `mcp.base.json`) and notification hooks. `~/.claude/settings.json` and the MCP list in `~/.claude.json` are built, not stowed (see below).
+- `scripts/` — Standalone scripts, on PATH as `~/dotfiles/scripts` (`cleanwt`, `clean-worktrees`, `claude-config-build`, `claude-statusline.sh`)
 - `Brewfile` — Homebrew packages, casks, and fonts
 
 Secrets live in `~/.shell/secrets.bash` (gitignored, never committed).
 
 ## Public repo + work layer
 
-This repo is **public** and is shared by a personal laptop and a work laptop. Work-only and confidential settings live in the private repo `~/dotfiles-work`, stowed only on the work laptop:
+This repo is **public** and is shared by a personal laptop and a work laptop. Work-only and confidential config lives in the private repo `~/dotfiles-work`, stowed only on the work laptop:
 
 ```sh
 cd ~/dotfiles && stow .
 cd ~/dotfiles-work && stow .   # work laptop only
-claude-settings-build          # after either repo changes .claude layers
+claude-config-build            # after a .claude layer changes
 ```
 
-- Shell: `.zshrc` sources `~/.shell-work.bash` last, when it exists.
-- Claude Code: `claude-settings-build` merges `~/.claude/settings.base.json` (this repo) with `~/.claude/settings.work.json` (dotfiles-work, if present) into a real `~/.claude/settings.json`. Objects merge recursively; arrays in the work layer replace base arrays. Claude Code also writes `settings.json` (`/config`, `/plugin`, auto mode); the script refuses to overwrite such changes and shows a diff. Move the change into a layer file, then run `claude-settings-build --force`. `--check` shows drift.
-- Codex: `~/.codex/config.toml` lives in dotfiles-work (Codex rewrites it). `.codex/hooks.json` stays here.
-- `~/.config` and `~/.local` are folded links into this repo, so dotfiles-work cannot add files under them, and every tool that writes there writes into this repo. Gitignore new secrets or state there before committing. `.config/opencode/` is ignored for this reason.
+- **No folding.** Both repos have a `.stowrc` with `--no-folding`, so stow links files, never whole folders. `~/.config`, `~/.local`, `~/.shell` etc. are real folders; tool data and secrets written there stay out of the repo. Do not remove `.stowrc`.
+- **Compatibility links.** Some installs (gcloud, uv Python, mason, nvm, zinit) have the old path `~/dotfiles/.local/...` or `~/dotfiles/.config/...` built in. The repo keeps links at `.local/share`, `.local/state`, `.local/bin/google-cloud-sdk`, `.config/gcloud` and `.config/nvm` that point back to the real folders in `$HOME`. They are gitignored and stow-ignored. Delete one only after the tools under it are reinstalled.
+- **Shell:** `.zshrc` sources `~/.shell-work.bash` last, when it exists.
+- **Claude Code:** `claude-config-build` merges `~/.claude/<name>.{base,work,machine}.json` (base from this repo, work from dotfiles-work, machine from no repo) for two targets: `settings.*` -> `~/.claude/settings.json`, and `mcp.*` (`{"mcpServers": {...}}`) -> the `mcpServers` key of `~/.claude.json` (the rest of that file is Claude Code state; leave it). Objects merge recursively; arrays in a later layer replace earlier ones. Claude Code also writes these targets (`/config`, `/plugin`, `claude mcp add -s user`); the script refuses to overwrite such changes and shows a diff. Move the change into a layer, then run `claude-config-build --force`. `--check` shows drift.
+- **Codex:** `~/.codex/config.toml` lives in dotfiles-work (Codex rewrites it; if the link becomes a file, run `stow --adopt .` there). `.codex/hooks.json` stays here.
+- **opencode:** `cli.json` is here; `opencode.jsonc` (Datadog MCPs) is in dotfiles-work. `~/.config/opencode/AGENTS.md` is a local link to `~/.agents/AGENTS.md`.
 
-Before committing here, never commit tokens, keys, internal hostnames, bucket names, or employer repo details. Put them in dotfiles-work or a gitignored file.
+Before committing here, never commit tokens, keys, internal hostnames, bucket names, or employer repo details. Put them in dotfiles-work, a `*.machine.json` layer, or a gitignored file.
 
 ## Git worktree system
 

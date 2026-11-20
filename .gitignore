@@ -52,14 +52,20 @@
 .config/1Password/
 .config/devbox-control/
 .config/tmux-server/
-# Work-specific (Datadog MCPs, monorepo rules). Move to dotfiles-work after ~/.config is unfolded.
-.config/opencode/
 .local/pipx/
 
-# Claude settings.json is built from layers by scripts/claude-settings-build
+# Built by scripts/claude-config-build; work and machine layers live elsewhere
 .claude/settings.json
-.claude/.settings.last-build.json
-.claude/settings.work.json
+.claude/.*.last-build.json
+.claude/*.work.json
+.claude/*.machine.json
 
 # Local copies made before risky edits
 *.before-*
+
+# Compatibility links (see .stow-global-ignore); no trailing slash, they are links
+.local/share
+.local/state
+.local/bin/google-cloud-sdk
+.config/gcloud
+.config/nvm

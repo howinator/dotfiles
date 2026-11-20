@@ -1,3 +1,20 @@
+# How these dotfiles work
+
+- **Two repos, layered.** This repo is public and is used on every machine. A
+  private repo, `~/dotfiles-work`, adds work-only config on the work laptop.
+  Anything that only one machine needs goes in a `*.machine.json` layer or a
+  gitignored file, never here.
+- **Stow, no folding.** `stow .` links each tracked file into `$HOME`
+  (`.stowrc` sets `--no-folding`). Folders such as `~/.config` and `~/.local`
+  are real folders, so tool data and secrets stay out of the repo.
+- **Claude Code is built, not linked.** `claude-config-build` merges
+  `~/.claude/{settings,mcp}.{base,work,machine}.json` into
+  `~/.claude/settings.json` and the `mcpServers` key of `~/.claude.json`.
+  It stops if Claude Code changed those files since the last build.
+- **Shell and Codex.** `.zshrc` sources `~/.shell-work.bash` when it exists.
+  Codex's `config.toml` lives in `dotfiles-work`; `hooks.json` lives here.
+- **Secrets** live in `~/.shell/secrets.bash` and other gitignored files.
+
 # Setup
 1. Clone the repo
 2. Create a `~/.shell/secrets.bash` file
@@ -9,7 +26,8 @@
 	signingkey = [KEY_ID]
 ```
 5. Run `brew bundle install --file=Brewfile`
-6. Run `stow .`
+6. Run `stow .` (and `stow .` in `~/dotfiles-work` on the work laptop)
+7. Run `claude-config-build`
 
 # Basic nav
 - ^R will open recent commands in fzf

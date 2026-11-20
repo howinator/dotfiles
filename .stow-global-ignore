@@ -30,3 +30,15 @@ brew_installs.txt
 Brewfile
 cheat/
 settings\.local\.json
+
+# Stow options file, and repo-only folders
+^/\.stowrc
+^/\.github
+
+# Compatibility links in ~/dotfiles that point back to real dirs in $HOME,
+# left after ~/.config and ~/.local were unfolded (tools embed these paths).
+^/\.local/share$
+^/\.local/state$
+^/\.local/bin/google-cloud-sdk$
+^/\.config/gcloud$
+^/\.config/nvm$
